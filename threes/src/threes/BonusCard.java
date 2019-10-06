@@ -1,5 +1,5 @@
 public class BonusCard{
-    int maxCard;
+    int maxCard = 48;
 
     public BonusCard(int maxCard){
         this.maxCard = maxCard;

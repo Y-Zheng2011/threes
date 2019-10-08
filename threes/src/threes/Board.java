@@ -9,6 +9,10 @@ public class Board{
     private long board; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.
     private int maxCard = 0;
 
+    public Board(int[][] cur){
+
+    }
+
     public void setNextCard(int card){
         nextCard = card;
     }
@@ -27,6 +31,12 @@ public class Board{
 
     public float calcScore(){
         return 0;
+    }
+
+
+
+    public void move(){
+
     }
 
 }

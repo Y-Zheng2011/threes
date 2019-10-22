@@ -3,17 +3,9 @@ package threes;
 import java.util.*;
 
 public class Deck{
-    private static final int[] map = {3, 6, 12, 24, 48, 96, 192, 384, 768, 1536, 3072, 6144};
-    private static final Map<Integer, Integer> rmap;
-    static {
-        rmap = new HashMap<>();
-        for (int i = 0; i < 12; i++) {
-            rmap.put(map[i],i);
-        }
-    }
+
 
     private int[] deck = new int[3];
-    private float[] probCards = new float[3];
     private int deckNum;
 
 

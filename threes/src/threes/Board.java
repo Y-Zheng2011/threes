@@ -15,10 +15,18 @@ public class Board{
     }
 
     //Masks for acquiring each cell
-    private long[][] MASK = {{0xf000000000000000L, 0x0f00000000000000L, 0x00f0000000000000L, 0x000f000000000000L},
+    private static final long[][] mask = {{0xf000000000000000L, 0x0f00000000000000L, 0x00f0000000000000L, 0x000f000000000000L},
             {0x0000f00000000000L, 0x00000f0000000000L, 0x000000f000000000L, 0x0000000f00000000L},
             {0x00000000f0000000L, 0x000000000f000000L, 0x0000000000f00000L, 0x00000000000f0000L},
             {0x000000000000f000L, 0x0000000000000f00L, 0x00000000000000f0L, 0x000000000000000fL}};
+
+    //bitshift for each cell and initialization.
+    private static final long[][] bitShift = {{60, 56, 52, 48}, {44, 40, 36, 32}, {28, 24, 20, 16}, {12, 8, 4, 0}};
+
+//    private static final long[] maskCol = {0xf000f000f000f000L, 0x0f000f000f000f00L, 0x00f000f000f000f0L, 0x000f000f000f000fL};
+//    private static final long[] colShift = {};
+//    private static final long[] maskRow = {0xffff000000000000L, 0x0000ffff00000000L, 0x00000000ffff0000L, 0x000000000000ffffL};
+//    private static final long[] rowShift = {12, 8, 4, 0};
 
 
     // Heuristic scoring settings
@@ -68,16 +76,32 @@ public class Board{
         long tmp;
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width-1; j++) {
-                tmp = (board & MASK[i][j]) >> (60-i*16-j*4);
+                tmp = (board & mask[i][j]) >> bitShift[i][j];
                 System.out.print(map[(int) tmp] + ", ");
             }
-            tmp = (board & MASK[i][3]) >> (60-i*16-12);
+            tmp = (board & mask[i][3]) >> (60-i*16-12);
             System.out.println(map[(int) tmp]);
         }
     }
 
-    public void move(){
+    private int swipeleft(){
+        int ret = 0;
+        int[] cell = new int[width];
+        for (int i = 0; i < width; i++){
+            for (int j = 0; j < width; j++){
+                cell[j] = (int) (board & mask[i][j] >> bitShift[i][j]);
+            }
+            
+        }
+        return ret;
+    }
 
+    /*If swiping is doable, return 1, else return 0.
+    parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
+    */
+    public int swipe(int dir){
+        int ret = 0;
+        return ret;
     }
 
 }

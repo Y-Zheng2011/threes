@@ -1,5 +1,7 @@
 package threes;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.*;
 
 public class Board{
@@ -52,6 +54,11 @@ public class Board{
         this.nextCard = nextCard;
     }
 
+    public Board(Board b, int nextCard){
+        this.board = b.getBoard();
+        this.nextCard = nextCard;
+    }
+
     public void setNextCard(int card){
         nextCard = card;
     }
@@ -68,6 +75,10 @@ public class Board{
         return  maxCard;
     }
 
+    public long getBoard(){
+        return this.board;
+    }
+
     public float calcScore(){
         return 0;
     }
@@ -79,19 +90,39 @@ public class Board{
                 tmp = (board & mask[i][j]) >> bitShift[i][j];
                 System.out.print(map[(int) tmp] + ", ");
             }
-            tmp = (board & mask[i][3]) >> (60-i*16-12);
+            tmp = (board & mask[i][3]) >> bitShift[i][3];
             System.out.println(map[(int) tmp]);
         }
     }
 
-    private int swipeleft(){
+    private int swipeLeft(){
         int ret = 0;
         int[] cell = new int[width];
         for (int i = 0; i < width; i++){
-            for (int j = 0; j < width; j++){
-                cell[j] = (int) (board & mask[i][j] >> bitShift[i][j]);
+            cell[0] = (int) ((board & mask[i][0]) >> bitShift[i][0]);
+            for (int j = 1; j < width; j++){
+                cell[j] = (int) ((board & mask[i][j]) >> bitShift[i][j]);
+                if (cell[j-1] == 0) {
+                    cell[j-1] = cell[j];
+                    cell[j] = 0;
+                    ret = 1;
+                } else if (cell[j-1] + cell[j] == 3 ) {
+                    cell[j-1] = 3;
+                    cell[j] = 0;
+                    ret = 1;
+                } else if ((cell[j-1] == cell[j]) && (cell[j] > 2)) {
+                    cell[j-1]++;
+                    cell[j] = 0;
+                    ret = 1;
+                }
             }
-            
+            if (ret == 1) {
+                board = (board & ~(mask[i][0]|mask[i][1]|mask[i][2]|mask[i][3])) |
+                        (cell[0] << bitShift[i][0]) |
+                        (cell[1] << bitShift[i][1]) |
+                        (cell[2] << bitShift[i][2]) |
+                        (cell[3] << bitShift[i][3]);
+            }
         }
         return ret;
     }
@@ -100,7 +131,8 @@ public class Board{
     parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
     */
     public int swipe(int dir){
-        int ret = 0;
+        int ret;
+        ret = swipeLeft();
         return ret;
     }
 

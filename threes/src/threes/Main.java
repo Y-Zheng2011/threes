@@ -18,5 +18,7 @@ public class Main {
         int nc = 1;
         Board board = new Board(tmp, nc);
         board.printBoard();
+        board.swipe(1);
+        board.printBoard();
     }
 }

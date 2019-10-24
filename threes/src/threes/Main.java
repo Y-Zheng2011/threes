@@ -18,7 +18,7 @@ public class Main {
 //        int nc = scanner.nextInt();
         int nc = 1;
         Board board = new Board(tmp, nc);
-        board.swipe(0);
+        board.printBoard();
         long end = System.currentTimeMillis();
         System.out.println("Running time: " + (end - start) + " ms");
     }

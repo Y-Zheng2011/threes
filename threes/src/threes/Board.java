@@ -4,6 +4,7 @@ import java.util.*;
 
 public class Board{
 
+    //region Properties
     //Build a BiMap between the actual value and stored indices.
     private static final int[] map = {0, 1, 2, 3, 6, 12, 24, 48, 96, 192, 384, 768, 1536, 3072, 6144};
     private static final Map<Integer, Integer> rmap;
@@ -26,17 +27,16 @@ public class Board{
     private static final long[] maskCol = {0xf000f000f000f000L, 0x0f000f000f000f00L, 0x00f000f000f000f0L, 0x000f000f000f000fL};
     private static final long[] maskRow = {0xffff000000000000L, 0x0000ffff00000000L, 0x00000000ffff0000L, 0x000000000000ffffL};
 
-    // Heuristic scoring settings
-    static float scoreLostPenalty = -200000.0f;
-    static float scoreEmptySpace = 200.0f;
-    static float scoreMaxCard = 200.0f;
+
 
     private int nextCard;
     private long board = 0; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.
     private int maxCard = 0;
     private int height;
     private int width;
+    //endregion
 
+    //region Constructors
     // When the game start, input the board (as a 4 by 4 matrix) and the next card manually.
     public Board(int[][] currentBoard, int nextCard){
         height = currentBoard.length;
@@ -50,11 +50,16 @@ public class Board{
         this.nextCard = nextCard;
     }
 
-    public Board(Board b, int nextCard){
-        this.board = b.getBoard();
-        this.nextCard = nextCard;
+    public Board(Board b){
+        board = b.getBoard();
+        nextCard = b.nextCard;
+        maxCard = b.getMaxCard();
+        height = b.getHeight();
+        width = b.getWidth();
     }
+    //endregion
 
+    //region Accessors
     public void setNextCard(int card){
         nextCard = card;
     }
@@ -68,21 +73,32 @@ public class Board{
     }
 
     public int getMaxCard(){
-        return  maxCard;
+        findMaxCard();
+        return  map[maxCard];
+    }
+
+    public void setBoard(long board) {
+        this.board = board;
     }
 
     public long getBoard(){
         return this.board;
     }
 
-    //Calculate heuristic score for the current board.
-    public float calcScore(){
-        float score = 0;
-
-        return score;
+    public int getHeight() {
+        return this.height;
     }
 
-    public void printBoard(){
+    public int getWidth() {
+        return this.width;
+    }
+    //endregion
+
+    public int getCardIndex(int x, int y) {
+        return (int) (board & mask[x][y] >> bitShift[x][y]);
+    }
+
+    public void printBoard() {
         long tmp;
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width-1; j++) {
@@ -93,6 +109,18 @@ public class Board{
             System.out.println(map[(int) tmp]);
         }
         System.out.println();
+    }
+
+    private void findMaxCard() {
+        long tmp;
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                tmp = (board & mask[i][j]) >> bitShift[i][j];
+                if (maxCard < tmp) {
+                    maxCard = (int) tmp;
+                }
+            }
+        }
     }
 
     private int swipeLeft() {

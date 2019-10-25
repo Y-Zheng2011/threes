@@ -1,17 +1,18 @@
 package threes;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Board{
+public class Board {
 
     //region Constants
     //Build a BiMap between the actual value and stored indices.
-    private static final int[] map = {0, 1, 2, 3, 6, 12, 24, 48, 96, 192, 384, 768, 1536, 3072, 6144};
-    private static final Map<Integer, Integer> rmap;
+    private static final int[] MAP = {0, 1, 2, 3, 6, 12, 24, 48, 96, 192, 384, 768, 1536, 3072, 6144};
+    private static final Map<Integer, Integer> RMAP;
     static {
-        rmap = new HashMap<>();
-        for (int i = 0; i < map.length; i++) {
-            rmap.put(map[i],i);
+        RMAP = new HashMap<>();
+        for (int i = 0; i < MAP.length; i++) {
+            RMAP.put(MAP[i], i);
         }
     }
 
@@ -42,8 +43,8 @@ public class Board{
         width = currentBoard[0].length;
         for (int i = 0; i < height; i++){
             for (int j = 0; j < width; j++){
-                board = (board << 4) + rmap.get(currentBoard[i][j]);
-                if (maxCard < currentBoard[i][i]) maxCard = rmap.get(currentBoard[i][i]);
+                board = (board << 4) + RMAP.get(currentBoard[i][j]);
+                if (maxCard < currentBoard[i][i]) maxCard = RMAP.get(currentBoard[i][i]);
             }
         }
         this.nextCard = nextCard;
@@ -102,10 +103,10 @@ public class Board{
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width-1; j++) {
                 tmp = (int) ((board & mask[i][j]) >> bitShift[i][j]);
-                System.out.print(map[tmp] + ", ");
+                System.out.print(MAP[tmp] + ", ");
             }
             tmp = (int) ((board & mask[i][3]) >> bitShift[i][3]);
-            System.out.println(map[tmp]);
+            System.out.println(MAP[tmp]);
         }
         System.out.println();
     }
@@ -285,7 +286,7 @@ public class Board{
     /*If swiping is doable, return 1, else return 0.
     parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
     */
-    public int swipe(int dir){
+    public int swipe(int dir) {
         int ret;
         if (dir == 0){
             ret = swipeLeft();
@@ -299,8 +300,8 @@ public class Board{
         return ret;
     }
 
-    public void insCard(int card, int x, int y){
-        long tmp = rmap.get(card);
+    public void insCard(int card, int x, int y) {
+        long tmp = RMAP.get(card);
         if ((board & mask[x][y]) >> bitShift[x][y] == 0) {
             board = board & ~mask[x][y] | tmp << bitShift[x][y];
         } else {

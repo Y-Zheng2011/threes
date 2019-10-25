@@ -20,7 +20,7 @@ public class Main {
         Board board = new Board(tmp, nc);
         board.printBoard();
         board.swipe(1);
-        board.insCard(3,2,3);
+        board.insCard(3,0,3);
         board.printBoard();
         long end = System.currentTimeMillis();
         System.out.println("Running time: " + (end - start) + " ms");

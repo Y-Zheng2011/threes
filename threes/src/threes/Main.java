@@ -19,8 +19,9 @@ public class Main {
         int nc = 1;
         Board board = new Board(tmp, nc);
         board.printBoard();
-        Evaluator eval = new Evaluator(board.getBoard(),board.getNextCard());
-        eval.print();
+        board.swipe(1);
+        board.insCard(3,2,3);
+        board.printBoard();
         long end = System.currentTimeMillis();
         System.out.println("Running time: " + (end - start) + " ms");
     }

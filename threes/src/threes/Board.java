@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Board{
 
-    //region Properties
+    //region Constants
     //Build a BiMap between the actual value and stored indices.
     private static final int[] map = {0, 1, 2, 3, 6, 12, 24, 48, 96, 192, 384, 768, 1536, 3072, 6144};
     private static final Map<Integer, Integer> rmap;
@@ -26,15 +26,14 @@ public class Board{
 
     private static final long[] maskCol = {0xf000f000f000f000L, 0x0f000f000f000f00L, 0x00f000f000f000f0L, 0x000f000f000f000fL};
     private static final long[] maskRow = {0xffff000000000000L, 0x0000ffff00000000L, 0x00000000ffff0000L, 0x000000000000ffffL};
-
-
+    //endregion
 
     private int nextCard;
     private long board = 0; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.
     private int maxCard = 0;
     private int height;
     private int width;
-    //endregion
+
 
     //region Constructors
     // When the game start, input the board (as a 4 by 4 matrix) and the next card manually.
@@ -52,7 +51,7 @@ public class Board{
 
     public Board(Board b){
         board = b.getBoard();
-        nextCard = b.nextCard;
+        nextCard = b.getNextCard();
         maxCard = b.getMaxCard();
         height = b.getHeight();
         width = b.getWidth();
@@ -74,7 +73,7 @@ public class Board{
 
     public int getMaxCard(){
         findMaxCard();
-        return  map[maxCard];
+        return maxCard;
     }
 
     public void setBoard(long board) {
@@ -95,29 +94,29 @@ public class Board{
     //endregion
 
     public int getCardIndex(int x, int y) {
-        return (int) (board & mask[x][y] >> bitShift[x][y]);
+         return (int) ((board & mask[x][y]) >> bitShift[x][y]);
     }
 
     public void printBoard() {
-        long tmp;
+        int tmp;
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width-1; j++) {
-                tmp = (board & mask[i][j]) >> bitShift[i][j];
-                System.out.print(map[(int) tmp] + ", ");
+                tmp = (int) ((board & mask[i][j]) >> bitShift[i][j]);
+                System.out.print(map[tmp] + ", ");
             }
-            tmp = (board & mask[i][3]) >> bitShift[i][3];
-            System.out.println(map[(int) tmp]);
+            tmp = (int) ((board & mask[i][3]) >> bitShift[i][3]);
+            System.out.println(map[tmp]);
         }
         System.out.println();
     }
 
     private void findMaxCard() {
-        long tmp;
+        int tmp;
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                tmp = (board & mask[i][j]) >> bitShift[i][j];
+                tmp = (int) (board & mask[i][j]) >> bitShift[i][j];
                 if (maxCard < tmp) {
-                    maxCard = (int) tmp;
+                    maxCard = tmp;
                 }
             }
         }
@@ -151,9 +150,7 @@ public class Board{
                 }
             }
             if (fold != -1) {
-                for (int j = fold; j < width - 1; j++) {
-                    cell[j] = cell[j + 1];
-                }
+                if (width - 1 - fold >= 0) System.arraycopy(cell, fold + 1, cell, fold, width - 1 - fold);
                 cell[width-1] = 0;
                 board = (board & ~maskRow[i]) |
                         (cell[0] << bitShift[i][0]) |
@@ -193,9 +190,7 @@ public class Board{
                 }
             }
             if (fold != -1) {
-                for (int j = fold; j > 0; j--) {
-                    cell[j] = cell[j - 1];
-                }
+                System.arraycopy(cell, 0, cell, 1, fold);
                 cell[0] = 0;
                 board = (board & ~maskCol[i]) |
                         (cell[0] << bitShift[0][i]) |
@@ -235,9 +230,7 @@ public class Board{
                 }
             }
             if (fold != -1) {
-                for (int j = fold; j > 0; j--) {
-                    cell[j] = cell[j - 1];
-                }
+                System.arraycopy(cell, 0, cell, 1, fold);
                 cell[0] = 0;
                 board = (board & ~maskRow[i]) |
                         (cell[0] << bitShift[i][0]) |
@@ -277,9 +270,7 @@ public class Board{
                 }
             }
             if (fold != -1) {
-                for (int j = fold; j < width - 1; j++) {
-                    cell[j] = cell[j + 1];
-                }
+                if (width - 1 - fold >= 0) System.arraycopy(cell, fold + 1, cell, fold, width - 1 - fold);
                 cell[width-1] = 0;
                 board = (board & ~maskCol[i]) |
                         (cell[0] << bitShift[0][i]) |
@@ -295,7 +286,7 @@ public class Board{
     parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
     */
     public int swipe(int dir){
-        int ret = 0;
+        int ret;
         if (dir == 0){
             ret = swipeLeft();
         } else if (dir == 1){
@@ -306,6 +297,15 @@ public class Board{
             ret = swipeUp();
         }
         return ret;
+    }
+
+    public void insCard(int card, int x, int y){
+        long tmp = rmap.get(card);
+        if ((board & mask[x][y]) >> bitShift[x][y] == 0) {
+            board = board & ~mask[x][y] | tmp << bitShift[x][y];
+        } else {
+            System.out.printf("Insertion error, row: %d col: %d is not empty\n", x, y);
+        }
     }
 
 }

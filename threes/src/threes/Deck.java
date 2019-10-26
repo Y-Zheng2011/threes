@@ -2,7 +2,7 @@ package threes;
 
 import java.util.*;
 
-public class Deck{
+public class Deck {
 
     //deck stores the number of each cards and prob stores teh probability of drawing each card from the current deck (Index: Card= 0 : 1, 1 : 2, 2: 3).
     private int[] deck = new int[3];
@@ -10,18 +10,26 @@ public class Deck{
     private int deckNum;
 
 
-/*    public Deck(){
-        Arrays.fill(deck,4);
-    }*/
-
-/*    public Deck(int maxCard){
-        this.maxCard = maxCard;
-        Arrays.fill(deck,4);
-        deckNum = 12;
-    }*/
+    public Deck(Deck d){
+        System.arraycopy(d.deck, 0, deck, 0, d.deck.length);
+        System.arraycopy(d.prob, 0, prob, 0, d.prob.length);
+        deckNum = d.deckNum;
+    }
 
     //Constructor for the beginning of the game(9 cards on the board when game starts, deckNum = 3).
-    public Deck(int c1, int c2, int c3){
+    public Deck(int[][] b){
+        int c1 = 0, c2 = 0, c3 = 0;
+        for (int i = 0; i < b.length; i++){
+            for (int j = 0; j < b.length; j++){
+                if (b[i][j] == 1) {
+                    c1++;
+                } else if (b[i][j] == 2) {
+                    c2++;
+                } else if (b[i][j] == 3) {
+                    c3++;
+                }
+            }
+        }
         deckNum = 12- c1 - c2 - c3;
         deck[0] = 4 - c1;
         deck[1] = 4 - c2;
@@ -31,11 +39,19 @@ public class Deck{
         prob[2] = 1.0f * deck[2]/deckNum;
     }
 
+    public int getDeckNum(){
+        return deckNum;
+    }
+
     //Reset the deck.
     public void reset(){
         Arrays.fill(deck,4);
         Arrays.fill(prob,1.0f/3);
         deckNum = 12;
+    }
+
+    public boolean isEmpty(int c){
+       return deck[c-1] == 0;
     }
 
     public void draw(int card) {

@@ -5,18 +5,14 @@ public class Evaluator {
     private int countEmpty = 0;
     private int count1and2 = 0;
     private int countFold = 0;
-//    private Board board;
 
     // Heuristic scoring settings
-    private static float scoreLostPenalty = -2000.0f;
-    private static float scoreEmptySpace = 3.0f;
-    private static float scoreMaxCard = 10.0f;
-    private static float scoreFold = 7.0f;
-    private static float score1and2 = 1.0f;
+    private static float scoreLostPenalty = -20000.0f;
+    private static float scoreEmptySpace = 7.0f;
+    private static float scoreMaxCard = 15.0f;
+    private static float scoreFold = 4.0f;
+    private static float score1and2 = 3.0f;
 
-//    public Evaluator(Board b) {
-//        board = new Board(b);
-//    }
 
     public void setHS(float[] h) {
         scoreLostPenalty = h[0];
@@ -34,7 +30,6 @@ public class Evaluator {
 
     private void count(Board board) {
         reset();
-        long b = board.getBoard();
         int[][] card = new int[4][4];
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -71,13 +66,14 @@ public class Evaluator {
         }
     }
 
-    public void print(Board b){
-        count(b);
-        System.out.println("Empty spaces: " + countEmpty);
-        System.out.println("Foldable (not 1-2) pairs: " + countFold);
-        System.out.println("Adjacent 1-2 pairs: " + count1and2);
-        System.out.println("Current score: " + calcScore(b));
-    }
+//    public void print(Board b){
+//        count(b);
+//        System.out.println("Empty spaces: " + countEmpty);
+//        System.out.println("Foldable (not 1-2) pairs: " + countFold);
+//        System.out.println("Adjacent 1-2 pairs: " + count1and2);
+//        System.out.println("The max card: " + b.getMaxCard());
+//        System.out.println("Current score: " + calcScore(b));
+//    }
 
     //Calculate heuristic score for the current board.
     public float calcScore(Board b){
@@ -85,5 +81,140 @@ public class Evaluator {
         count(b);
         score = countEmpty * scoreEmptySpace + countFold * scoreFold + count1and2 * score1and2 + b.getMaxCard() * scoreMaxCard;
         return score;
+    }
+
+    //Calculate the average score for the board when search reaches the max depth
+    public float calcAvgScore(Board b, int move) {
+        int counter = 0, size = b.getSize()-1;
+        float avg = 0.0f;
+        if (move == 0) {
+            for (int i = 0; i <= size; i++) {
+                if (b.getCardIndex(i, size) == 0) {
+                    Board p = new Board(b);
+                    p.insCard(b.getNextCard(), i, size);
+                    counter++;
+                    avg = avg + calcScore(p);
+                }
+            }
+            avg = avg / counter;
+            return avg;
+        } else if (move == 1) {
+            for (int i = 0; i <= size; i++) {
+                if (b.getCardIndex(0, i) == 0) {
+                    Board p = new Board(b);
+                    p.insCard(b.getNextCard(), 0, i);
+                    counter++;
+                    avg = avg + calcScore(p);
+                }
+            }
+            avg = avg / counter;
+            return avg;
+        } else if (move == 2) {
+            for (int i = 0; i < size; i++) {
+                if (b.getCardIndex(i, 0) == 0) {
+                    Board p = new Board(b);
+                    p.insCard(b.getNextCard(), i, 0);
+                    counter++;
+                    avg = avg + calcScore(p);
+                }
+            }
+            avg = avg / counter;
+            return avg;
+        } else if (move == 3) {
+            for (int i = 0; i < size; i++) {
+                if (b.getCardIndex(size, i) == 0) {
+                    Board p = new Board(b);
+                    p.insCard(b.getNextCard(), size, i);
+                    counter++;
+                    avg = avg + calcScore(p);
+                }
+            }
+            avg = avg / counter;
+            return avg;
+        } else return avg;
+    }
+
+    //Calculate the average score for the board with recursion
+    public float calcAvgRec(Board board, Deck deck, int move, int depth) {
+        int counter = 0, size = board.getSize()-1, m;
+        float avg = 0.0f;
+        if (move == 0) {
+            for (int i = 0; i <= size; i++) {
+                if (board.getCardIndex(i, size) == 0) {
+                    for (int j = 1; j < 4; j++){
+                        Deck d = new Deck(deck);
+                        if (!d.isEmpty(j)){
+                            d.draw(j);
+                            Board p = new Board(board);
+                            p.insCard(board.getNextCard(), i, size);
+                            p.setNextCard(j);
+                            m = Threes.findMove(p, depth - 1, d);
+                            p.swipe(m);
+                            avg = avg + calcScore(p);
+                        }
+                    }
+                    counter++;
+                }
+            }
+            avg = avg / counter;
+            return avg;
+        } else if (move == 1) {
+            for (int i = 0; i <= size; i++) {
+                if (board.getCardIndex(0, i) == 0) {
+                    for (int j = 1; j < 4; j++){
+                        Deck d = new Deck(deck);
+                        if (!d.isEmpty(j)){
+                            d.draw(j);
+                            Board p = new Board(board);
+                            p.insCard(board.getNextCard(), 0, i);
+                            p.setNextCard(j);
+                            m = Threes.findMove(p, depth - 1, d);
+                            p.swipe(m);
+                            avg = avg + calcScore(p);
+                        }
+                    }
+                }
+            }
+            avg = avg / counter;
+            return avg;
+        } else if (move == 2) {
+            for (int i = 0; i < size; i++) {
+                if (board.getCardIndex(i, 0) == 0) {
+                    for (int j = 1; j < 4; j++){
+                        Deck d = new Deck(deck);
+                        if (!d.isEmpty(j)){
+                            d.draw(j);
+                            Board p = new Board(board);
+                            p.insCard(board.getNextCard(), i, 0);
+                            p.setNextCard(j);
+                            m = Threes.findMove(p, depth - 1, d);
+                            p.swipe(m);
+                            avg = avg + calcScore(p);
+                        }
+                    }
+                }
+            }
+            avg = avg / counter;
+            return avg;
+        } else if (move == 3) {
+            for (int i = 0; i < size; i++) {
+                if (board.getCardIndex(size, i) == 0) {
+                    for (int j = 1; j < 4; j++){
+                        Deck d = new Deck(deck);
+                        if (!d.isEmpty(j)){
+                            d.draw(j);
+                            Board p = new Board(board);
+                            p.insCard(board.getNextCard(), size, i);
+                            p.setNextCard(j);
+                            m = Threes.findMove(p, depth - 1, d);
+                            p.swipe(m);
+                            avg = avg + calcScore(p);
+                        }
+                    }
+                }
+            }
+            avg = avg / counter;
+            return avg;
+        } else return avg;
     }
 }

@@ -32,17 +32,15 @@ public class Board {
     private int nextCard;
     private long board = 0; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.
     private int maxCard = 0;
-    private int height;
-    private int width;
+    private int size;
 
 
     //region Constructors
     // When the game start, input the board (as a 4 by 4 matrix) and the next card manually.
     public Board(int[][] currentBoard, int nextCard){
-        height = currentBoard.length;
-        width = currentBoard[0].length;
-        for (int i = 0; i < height; i++){
-            for (int j = 0; j < width; j++){
+        size = currentBoard.length;
+        for (int i = 0; i < size; i++){
+            for (int j = 0; j < size; j++){
                 board = (board << 4) + RMAP.get(currentBoard[i][j]);
                 if (maxCard < currentBoard[i][i]) maxCard = RMAP.get(currentBoard[i][i]);
             }
@@ -51,17 +49,16 @@ public class Board {
     }
 
     public Board(Board b){
-        board = b.getBoard();
-        nextCard = b.getNextCard();
-        maxCard = b.getMaxCard();
-        height = b.getHeight();
-        width = b.getWidth();
+        board = b.board;
+        nextCard = b.nextCard;
+        maxCard = b.nextCard;
+        size = b.size;
     }
     //endregion
 
     //region Accessors
     public void setNextCard(int card){
-        nextCard = card;
+        nextCard = RMAP.get(card);
     }
 
     public int getNextCard(){
@@ -72,9 +69,10 @@ public class Board {
         this.maxCard = maxCard;
     }
 
+    //Return the max card, not index.
     public int getMaxCard(){
         findMaxCard();
-        return maxCard;
+        return MAP[maxCard];
     }
 
     public void setBoard(long board) {
@@ -85,13 +83,10 @@ public class Board {
         return this.board;
     }
 
-    public int getHeight() {
-        return this.height;
+    public int getSize() {
+        return this.size;
     }
 
-    public int getWidth() {
-        return this.width;
-    }
     //endregion
 
     public int getCardIndex(int x, int y) {
@@ -100,8 +95,8 @@ public class Board {
 
     public void printBoard() {
         int tmp;
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width-1; j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size-1; j++) {
                 tmp = (int) ((board & mask[i][j]) >> bitShift[i][j]);
                 System.out.print(MAP[tmp] + ", ");
             }
@@ -113,8 +108,8 @@ public class Board {
 
     private void findMaxCard() {
         int tmp;
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 tmp = (int) (board & mask[i][j]) >> bitShift[i][j];
                 if (maxCard < tmp) {
                     maxCard = tmp;
@@ -123,36 +118,37 @@ public class Board {
         }
     }
 
-    private int swipeLeft() {
-        int ret = 0, fold;
-        long[] cell = new long[width];
-        for (int i = 0; i < height; i++) {
+    private boolean swipeLeft() {
+        boolean ret = false;
+        int fold;
+        long[] cell = new long[size];
+        for (int i = 0; i < size; i++) {
             fold = -1;
             cell[0] = (int) ((board & mask[i][0]) >> bitShift[i][0]);
-            for (int j = 1; j < width; j++) {
+            for (int j = 1; j < size; j++) {
                 cell[j] = (int) ((board & mask[i][j]) >> bitShift[i][j]);
                 if (fold == -1) {
                     if (cell[j] != 0 && cell[j - 1] == 0) {
                         cell[j - 1] = cell[j];
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     } else if (cell[j - 1] + cell[j] == 3 && cell[j] != 0) {
                         cell[j - 1] = 3;
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     } else if ((cell[j - 1] == cell[j]) && (cell[j] > 2)) {
                         cell[j - 1]++;
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     }
                 }
             }
             if (fold != -1) {
-                if (width - 1 - fold >= 0) System.arraycopy(cell, fold + 1, cell, fold, width - 1 - fold);
-                cell[width-1] = 0;
+                if (size - 1 - fold >= 0) System.arraycopy(cell, fold + 1, cell, fold, size - 1 - fold);
+                cell[size-1] = 0;
                 board = (board & ~maskRow[i]) |
                         (cell[0] << bitShift[i][0]) |
                         (cell[1] << bitShift[i][1]) |
@@ -163,29 +159,30 @@ public class Board {
         return ret;
     }
 
-    private int swipeDown() {
-        int ret = 0, fold;
-        long[] cell = new long[height];
-        for (int i = 0; i < width; i++) {
+    private boolean swipeDown() {
+        boolean ret = false;
+        int fold;
+        long[] cell = new long[size];
+        for (int i = 0; i < size; i++) {
             fold = -1;
-            cell[height-1] = (int) ((board & mask[height-1][i]) >> bitShift[height-1][i]);
-            for (int j = height-2; j >= 0; j--) {
+            cell[size-1] = (int) ((board & mask[size-1][i]) >> bitShift[size-1][i]);
+            for (int j = size-2; j >= 0; j--) {
                 cell[j] = (int) ((board & mask[j][i]) >> bitShift[j][i]);
                 if (fold == -1) {
                     if (cell[j] != 0 && cell[j + 1] == 0) {
                         cell[j + 1] = cell[j];
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     } else if (cell[j + 1] + cell[j] == 3 && cell[j] != 0) {
                         cell[j + 1] = 3;
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     } else if ((cell[j + 1] == cell[j]) && (cell[j] > 2)) {
                         cell[j + 1]++;
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     }
                 }
@@ -203,29 +200,30 @@ public class Board {
         return ret;
     }
 
-    private int swipeRight() {
-        int ret = 0, fold;
-        long[] cell = new long[width];
-        for (int i = 0; i < height; i++) {
+    private boolean swipeRight() {
+        boolean ret = false;
+        int fold;
+        long[] cell = new long[size];
+        for (int i = 0; i < size; i++) {
             fold = -1;
-            cell[width-1] = (int) ((board & mask[i][width-1]) >> bitShift[i][width-1]);
-            for (int j = width-2; j >= 0; j--) {
+            cell[size-1] = (int) ((board & mask[i][size-1]) >> bitShift[i][size-1]);
+            for (int j = size-2; j >= 0; j--) {
                 cell[j] = (int) ((board & mask[i][j]) >> bitShift[i][j]);
                 if (fold == -1) {
                     if (cell[j] != 0 && cell[j + 1] == 0) {
                         cell[j + 1] = cell[j];
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     } else if (cell[j + 1] + cell[j] == 3 && cell[j] != 0) {
                         cell[j + 1] = 3;
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     } else if ((cell[j + 1] == cell[j]) && (cell[j] > 2)) {
                         cell[j + 1]++;
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     }
                 }
@@ -243,36 +241,37 @@ public class Board {
         return ret;
     }
 
-    private int swipeUp() {
-        int ret = 0, fold;
-        long[] cell = new long[height];
-        for (int i = 0; i < width; i++) {
+    private boolean swipeUp() {
+        boolean ret = false;
+        int fold;
+        long[] cell = new long[size];
+        for (int i = 0; i < size; i++) {
             fold = -1;
             cell[0] = (int) ((board & mask[0][i]) >> bitShift[0][i]);
-            for (int j = 1; j < height; j++) {
+            for (int j = 1; j < size; j++) {
                 cell[j] = (int) ((board & mask[j][i]) >> bitShift[j][i]);
                 if (fold == -1) {
                     if (cell[j] != 0 && cell[j - 1] == 0) {
                         cell[j - 1] = cell[j];
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     } else if (cell[j - 1] + cell[j] == 3 && cell[j] != 0) {
                         cell[j - 1] = 3;
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     } else if ((cell[j - 1] == cell[j]) && (cell[j] > 2)) {
                         cell[j - 1]++;
                         cell[j] = 0;
-                        ret = 1;
+                        ret = true;
                         fold = j;
                     }
                 }
             }
             if (fold != -1) {
-                if (width - 1 - fold >= 0) System.arraycopy(cell, fold + 1, cell, fold, width - 1 - fold);
-                cell[width-1] = 0;
+                if (size - 1 - fold >= 0) System.arraycopy(cell, fold + 1, cell, fold, size - 1 - fold);
+                cell[size-1] = 0;
                 board = (board & ~maskCol[i]) |
                         (cell[0] << bitShift[0][i]) |
                         (cell[1] << bitShift[1][i]) |
@@ -286,8 +285,8 @@ public class Board {
     /*If swiping is doable, return 1, else return 0.
     parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
     */
-    public int swipe(int dir) {
-        int ret;
+    public boolean swipe(int dir) {
+        boolean ret;
         if (dir == 0){
             ret = swipeLeft();
         } else if (dir == 1){
@@ -302,11 +301,9 @@ public class Board {
 
     public void insCard(int card, int x, int y) {
         long tmp = RMAP.get(card);
-        if ((board & mask[x][y]) >> bitShift[x][y] == 0) {
-            board = board & ~mask[x][y] | tmp << bitShift[x][y];
-        } else {
-            System.out.printf("Insertion error, row: %d col: %d is not empty\n", x, y);
-        }
+        board = board | tmp << bitShift[x][y];
     }
+
+
 
 }

@@ -25,6 +25,7 @@ public class Main {
             move = Threes.findMove(board, 4, deck);
             if (move == -1) break;
             board.swipe(move);
+            ADBshell.swipe(move);
             System.out.printf("Move: %d (0: left, 1: down, 2: right, 3: up)\n",move);
             board.printBoard();
             end = System.currentTimeMillis();

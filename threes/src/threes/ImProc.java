@@ -3,26 +3,50 @@ package threes;
 import java.io.File;
 import java.io.IOException;
 import java.awt.image.BufferedImage;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.util.Properties;
 import javax.imageio.ImageIO;
 
 import static java.lang.System.exit;
 import static java.lang.System.getProperty;
 
-public class EZOCR {
+public class ImProc {
+
+    //region Constants
+    /*
+    Basic info of the board. firstPix constants are the pixel used to identify the top left card.
+    dist constants are the distance between two same sides of two adjacent tiles.
+    Note these only work for OnePlus 6.
+     */
     private static int width = 1080;
     private static int height = 2200;
     private static int firstPix_x = 235;
     private static int firstPix_y = 700;
     private static int dist_x = 202;
     private static int dist_y = 270;
+
+    // RGB color of different cards.
     private static int[] one = {102, 203, 255};
     private static int[] two = {255, 103, 128};
     private static int[] three = {254, 255, 255};
     private static int[] zero = {187, 217, 217};
 
-    BufferedImage image = null;
+    /*
+    Pixel position used to identify whether the next bonus card is
+    a single possibility or multiple possibilities.
+     */
+    private static int[] nextIden = {374, 382};
+
+    /*The first pixel of the mid line of central next tile.
+    Use the mid line to do matching.
+     */
+    private static int[] next = {498, 382};
+    //endregion
+
+
+    private BufferedImage image = null;
+    private boolean multiNext = false;
+
 
     public void init(){
         try {
@@ -57,18 +81,46 @@ public class EZOCR {
         } else if (pix_r == three[0] && pix_g == three[1] && pix_b == three[2]) {
             return 3;
         }
-        System.out.println("OCR error!");
+        System.out.println("Error! No matching tile!");
         return -1;
     }
 
-    public static void main(String[] args) {
-        EZOCR ezOCR = new EZOCR();
-        ezOCR.init();
-        for (int y = 0; y < 4; y++) {
-            for (int x = 0; x < 3; x++) {
-                System.out.print(ezOCR.getTile(x, y) + " ");
+    //Return true if there are 3 possible bonus cards.
+    public boolean isMultiNext(){
+        return multiNext;
+    }
+
+    public int[] getNextTile(int maxIndex){
+        int pixFlag = image.getRGB(nextIden[0], nextIden[1]);
+        if ((pixFlag & 0xff) != 250) {
+            multiNext = true;
+        }
+        if (multiNext) {
+            int[] ret = new int[3];
+            ret[1] = match(image.getSubimage(next[0], next[1], 83, 100), maxIndex);
+            ret[0] = ret[1] - 1;
+            ret[2] = ret[0] + 1;
+            return ret;
+        } else {
+
+        }
+
+    }
+
+    private int match(BufferedImage image, int maxIndex) {
+
+        try {
+            InputStream input = ImProc.class.getClassLoader().getResourceAsStream("config.properties");
+            Properties prop = new Properties();
+            if (input == null) {
+                System.out.println("Sorry, unable to find config.properties");
+                return -1;
             }
-            System.out.println(ezOCR.getTile(3, y));
+            prop.load(input);
+
+
+        } catch (IOException e){
+            e.printStackTrace();
         }
     }
 

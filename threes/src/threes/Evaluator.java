@@ -66,14 +66,6 @@ public class Evaluator {
         }
     }
 
-//    public void print(Board b){
-//        count(b);
-//        System.out.println("Empty spaces: " + countEmpty);
-//        System.out.println("Foldable (not 1-2) pairs: " + countFold);
-//        System.out.println("Adjacent 1-2 pairs: " + count1and2);
-//        System.out.println("The max card: " + b.getMaxCard());
-//        System.out.println("Current score: " + calcScore(b));
-//    }
 
     //Calculate heuristic score for the current board.
     public float calcScore(Board b){
@@ -150,7 +142,7 @@ public class Evaluator {
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             p.swipe(m);
-                            avg = avg + calcScore(p);
+                            avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
                         }
                     }
                     counter++;
@@ -170,7 +162,7 @@ public class Evaluator {
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             p.swipe(m);
-                            avg = avg + calcScore(p);
+                            avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
                         }
                     }
                 }
@@ -189,7 +181,7 @@ public class Evaluator {
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             p.swipe(m);
-                            avg = avg + calcScore(p);
+                            avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
                         }
                     }
                 }
@@ -208,7 +200,7 @@ public class Evaluator {
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             p.swipe(m);
-                            avg = avg + calcScore(p);
+                            avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
                         }
                     }
                 }

@@ -65,22 +65,10 @@ public class Board {
         return nextCard;
     }
 
-    public void setMaxCard(int maxCard){
-        this.maxCard = maxCard;
-    }
-
     //Return the max card, not index.
     public int getMaxCard(){
         findMaxCard();
         return MAP[maxCard];
-    }
-
-    public void setBoard(long board) {
-        this.board = board;
-    }
-
-    public long getBoard(){
-        return this.board;
     }
 
     public int getSize() {
@@ -104,6 +92,28 @@ public class Board {
             System.out.println(MAP[tmp]);
         }
         System.out.println();
+    }
+
+    /*If swiping is doable, return 1, else return 0.
+parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
+*/
+    public boolean swipe(int dir) {
+        boolean ret;
+        if (dir == 0){
+            ret = swipeLeft();
+        } else if (dir == 1){
+            ret = swipeDown();
+        } else if (dir == 2){
+            ret = swipeRight();
+        } else {
+            ret = swipeUp();
+        }
+        return ret;
+    }
+
+    public void insCard(int card, int x, int y) {
+        long tmp = RMAP.get(card);
+        board = board | tmp << bitShift[x][y];
     }
 
     private void findMaxCard() {
@@ -281,29 +291,5 @@ public class Board {
         }
         return ret;
     }
-
-    /*If swiping is doable, return 1, else return 0.
-    parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
-    */
-    public boolean swipe(int dir) {
-        boolean ret;
-        if (dir == 0){
-            ret = swipeLeft();
-        } else if (dir == 1){
-            ret = swipeDown();
-        } else if (dir == 2){
-            ret = swipeRight();
-        } else {
-            ret = swipeUp();
-        }
-        return ret;
-    }
-
-    public void insCard(int card, int x, int y) {
-        long tmp = RMAP.get(card);
-        board = board | tmp << bitShift[x][y];
-    }
-
-
 
 }

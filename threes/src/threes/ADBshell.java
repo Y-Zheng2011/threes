@@ -32,11 +32,4 @@ public class ADBshell{
         }
     }
 
-    public static void main(String[] args) {
-        long start, end;
-        start = System.currentTimeMillis();
-        ADBshell.screencap();
-        end = System.currentTimeMillis();
-        System.out.println("Runtime: " + (end - start) + " ms");
-    }
 }

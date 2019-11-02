@@ -1,14 +1,13 @@
 package threes;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import javax.imageio.ImageIO;
 
 import static java.lang.System.exit;
-import static java.lang.System.getProperty;
 
 public class ImProc {
 
@@ -41,11 +40,14 @@ public class ImProc {
     Use the mid line to do matching.
      */
     private static int[] next = {498, 382};
+
+    private static int thresh = 10;
     //endregion
 
 
     private BufferedImage image = null;
     private boolean multiNext = false;
+    private Map<String, Integer> map = new HashMap<>();
 
 
     public void init(){
@@ -97,31 +99,47 @@ public class ImProc {
         }
         if (multiNext) {
             int[] ret = new int[3];
-            ret[1] = match(image.getSubimage(next[0], next[1], 83, 100), maxIndex);
+            ret[1] = match(image.getSubimage(next[0], next[1], 83, 1), maxIndex);
             ret[0] = ret[1] - 1;
             ret[2] = ret[0] + 1;
             return ret;
         } else {
-
+            return new int[]{0};
         }
 
     }
 
     private int match(BufferedImage image, int maxIndex) {
+        StringBuilder str = new StringBuilder();
+
+        for (int i = 0; i < image.getWidth(); i++) {
+            if ((image.getRGB(i,0) & 0xff) < thresh) {
+                str.append('1');
+            } else {
+                str.append('0');
+            }
+        }
 
         try {
-            InputStream input = ImProc.class.getClassLoader().getResourceAsStream("config.properties");
+            String path = System.getProperty("user.dir");
+            path = path.concat("\\image\\config.properties");
+            OutputStream output = new FileOutputStream(path);
+
             Properties prop = new Properties();
-            if (input == null) {
-                System.out.println("Sorry, unable to find config.properties");
-                return -1;
-            }
-            prop.load(input);
 
+            prop.setProperty(str.toString(), "0");
 
-        } catch (IOException e){
-            e.printStackTrace();
+            // save properties to project root folder
+            prop.store(output, null);
+
+            System.out.println(prop);
+
+        } catch (IOException io) {
+            io.printStackTrace();
         }
+
+        return 0;
+
     }
 
 

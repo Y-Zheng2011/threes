@@ -18,15 +18,15 @@ public class ImProc {
     Note these only work for OnePlus 6.
      */
     private static int width = 1080;
-    private static int height = 2200;
+    private static int height = 2280;
     private static int firstPix_x = 235;
-    private static int firstPix_y = 700;
+    private static int firstPix_y = 780;
     private static int dist_x = 202;
     private static int dist_y = 270;
 
     // RGB color of different cards.
-    private static int[] one = {102, 203, 255};
-    private static int[] two = {255, 103, 128};
+    private static int[] one = {102, 204, 255};
+    private static int[] two = {255, 102, 128};
     private static int[] three = {254, 255, 255};
     private static int[] zero = {187, 217, 217};
 
@@ -34,12 +34,12 @@ public class ImProc {
     Pixel position used to identify whether the next bonus card is
     a single possibility or multiple possibilities.
      */
-    private static int[] nextIden = {374, 382};
+    private static int[] nextIden = {374, 462};
 
     /*The first pixel of the mid line of central next tile.
     Use the mid line to do matching.
      */
-    private static int[] next = {498, 382};
+    private static int[] next = {498, 462};
 
     private static int thresh = 10;
     //endregion
@@ -48,28 +48,66 @@ public class ImProc {
     private BufferedImage image = null;
     private boolean multiNext = false;
     private Map<String, Integer> map = new HashMap<>();
+    private int[][] board;
+    private boolean isBonus = false;
+    private int[] nextTile = {-1, -1, -1};
 
+    public int[][] getBoard(){
+        return board;
+    }
 
-    public void init(){
+    public void setBonus(boolean bonus) {
+        isBonus = bonus;
+    }
+
+    private void load(){
         try {
             String path = System.getProperty("user.dir");
-            path = path.concat("\\image\\screen.jpg");
+            path = path.concat("\\threes\\image\\screen.png");
             System.out.println(path);
             File input = new File(path);
-            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             image = ImageIO.read(input);
+//            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+//            image = ImageIO.read(input);
         } catch (IOException e) {
             e.printStackTrace();
             exit(1);
         }
+    }
+
+    public void init(){
+        load();
+        board = new int[4][4];
+        for (int i = 0; i < 4; i++){
+            for (int j = 0; j < 4; j++){
+                board[i][j] = getTile(j, i);
+            }
+        }
+        nextTile[0] = getNextTile();
         System.out.println("Finish reading image screen.png");
     }
 
-    public int getTile(int x, int y) {
+    private int getTile(int x, int y) {
         int pix_x = x * dist_x + firstPix_x;
         int pix_y = y * dist_y + firstPix_y;
 
         int pix = image.getRGB(pix_x, pix_y);
+        return match(pix);
+    }
+
+
+    //Return true if there are 3 possible bonus cards.
+    public boolean isMultiNext(){
+        return multiNext;
+    }
+
+    public int getNextTile() {
+        int pix = image.getRGB(next[0], next[1]);
+        return match(pix);
+    }
+
+    //Identify the primitive type (0, 1, 2 or 3) of the card with pixel pix
+    private int match(int pix) {
         int pix_r = pix >> 16 & 0xff;
         int pix_g = pix >> 8 & 0xff;
         int pix_b = pix & 0xff;
@@ -82,17 +120,53 @@ public class ImProc {
             return 2;
         } else if (pix_r == three[0] && pix_g == three[1] && pix_b == three[2]) {
             return 3;
+        } else {
+            System.out.println("Error! No matching tile!");
+            System.exit(1);
+            return -1;
         }
-        System.out.println("Error! No matching tile!");
-        return -1;
     }
 
-    //Return true if there are 3 possible bonus cards.
-    public boolean isMultiNext(){
-        return multiNext;
+    public int[] nextPos(int move) {
+        load();
+        int[] pos = {-1, -1};
+        if (move == 0) {
+            pos[1] = 3;
+            for (int i = 0; i < 4; i++) {
+                if (getTile(3, i) != 0) {
+                    pos[0] = i;
+                    return pos;
+                }
+            }
+        } else if (move == 1) {
+            pos[0] = 0;
+            for (int i = 0; i < 4; i++) {
+                if (getTile(i, 0) != 0) {
+                    pos[1] = i;
+                    return pos;
+                }
+            }
+        } else if (move == 2) {
+            pos[1] = 0;
+            for (int i = 0; i < 4; i++) {
+                if (getTile(0, i) != 0) {
+                    pos[0] = i;
+                    return pos;
+                }
+            }
+        } else {
+            pos[0] = 3;
+            for (int i = 0; i < 4; i++) {
+                if (getTile(i, 3) != 0) {
+                    pos[1] = i;
+                    return pos;
+                }
+            }
+        }
+        return pos;
     }
 
-    public int[] getNextTile(int maxIndex){
+/*    public int[] getNextTile(int maxIndex){
         int pixFlag = image.getRGB(nextIden[0], nextIden[1]);
         if ((pixFlag & 0xff) != 250) {
             multiNext = true;
@@ -107,9 +181,10 @@ public class ImProc {
             return new int[]{0};
         }
 
-    }
+    }*/
 
-    private int match(BufferedImage image, int maxIndex) {
+
+    public void setProp(BufferedImage image, int maxIndex) {
         StringBuilder str = new StringBuilder();
 
         for (int i = 0; i < image.getWidth(); i++) {
@@ -138,9 +213,40 @@ public class ImProc {
             io.printStackTrace();
         }
 
-        return 0;
-
     }
+
+//    private int match(BufferedImage image, int maxIndex) {
+//        StringBuilder str = new StringBuilder();
+//
+//        for (int i = 0; i < image.getWidth(); i++) {
+//            if ((image.getRGB(i,0) & 0xff) < thresh) {
+//                str.append('1');
+//            } else {
+//                str.append('0');
+//            }
+//        }
+//
+//        try {
+//            String path = System.getProperty("user.dir");
+//            path = path.concat("\\image\\config.properties");
+//            OutputStream output = new FileOutputStream(path);
+//
+//            Properties prop = new Properties();
+//
+//            prop.setProperty(str.toString(), "0");
+//
+//            // save properties to project root folder
+//            prop.store(output, null);
+//
+//            System.out.println(prop);
+//
+//        } catch (IOException io) {
+//            io.printStackTrace();
+//        }
+//
+//        return 0;
+//
+//    }
 
 
 

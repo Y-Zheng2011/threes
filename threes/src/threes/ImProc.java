@@ -60,11 +60,10 @@ public class ImProc {
         isBonus = bonus;
     }
 
-    private void load(){
+    public void load(){
         try {
             String path = System.getProperty("user.dir");
-            path = path.concat("\\threes\\image\\screen.png");
-            System.out.println(path);
+            path = path.concat("\\image\\screen.png");
             File input = new File(path);
             image = ImageIO.read(input);
 //            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -127,43 +126,8 @@ public class ImProc {
         }
     }
 
-    public int[] nextPos(int move) {
-        load();
-        int[] pos = {-1, -1};
-        if (move == 0) {
-            pos[1] = 3;
-            for (int i = 0; i < 4; i++) {
-                if (getTile(3, i) != 0) {
-                    pos[0] = i;
-                    return pos;
-                }
-            }
-        } else if (move == 1) {
-            pos[0] = 0;
-            for (int i = 0; i < 4; i++) {
-                if (getTile(i, 0) != 0) {
-                    pos[1] = i;
-                    return pos;
-                }
-            }
-        } else if (move == 2) {
-            pos[1] = 0;
-            for (int i = 0; i < 4; i++) {
-                if (getTile(0, i) != 0) {
-                    pos[0] = i;
-                    return pos;
-                }
-            }
-        } else {
-            pos[0] = 3;
-            for (int i = 0; i < 4; i++) {
-                if (getTile(i, 3) != 0) {
-                    pos[1] = i;
-                    return pos;
-                }
-            }
-        }
-        return pos;
+    public boolean findIns(int card, int x, int y) {
+        return (card == getTile(x, y));
     }
 
 /*    public int[] getNextTile(int maxIndex){

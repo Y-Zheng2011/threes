@@ -31,8 +31,9 @@ public class Board {
 
     private int nextCard;
     private long board = 0; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.
-    private int maxCard = 0;
+    private int maxCard = 3;
     private int size;
+    private boolean[] nextPos = new boolean[4];
 
 
     //region Constructors
@@ -75,6 +76,9 @@ public class Board {
         return this.size;
     }
 
+    public boolean getNextPos(int i) {
+        return nextPos[i];
+    }
     //endregion
 
     public int getCardIndex(int x, int y) {
@@ -95,10 +99,11 @@ public class Board {
     }
 
     /*If swiping is doable, return 1, else return 0.
-parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
-*/
+    parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
+    */
     public boolean swipe(int dir) {
         boolean ret;
+        resetNP();
         if (dir == 0){
             ret = swipeLeft();
         } else if (dir == 1){
@@ -111,9 +116,62 @@ parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, rig
         return ret;
     }
 
-    public void insCard(int card, int x, int y) {
-        long tmp = RMAP.get(card);
+    public void insNext(ImProc image, int move) {
+        int[] pos = {-1, -1};
+        image.load();
+        if (move == 0) {
+            pos[1] = 3;
+            for (int i = 0; i < 4; i++) {
+                if (nextPos[i]) {
+                    if (image.findIns(nextCard,3, i)) {
+                        pos[0] = i;
+                        break;
+                    }
+                }
+            }
+        } else if (move == 1) {
+            pos[0] = 0;
+            for (int i = 0; i < 4; i++) {
+                if (nextPos[i]) {
+                    if (image.findIns(nextCard, i, 0)) {
+                        pos[1] = i;
+                        break;
+                    }
+                }
+            }
+        } else if (move == 2) {
+            pos[1] = 0;
+            for (int i = 0; i < 4; i++) {
+                if (nextPos[i]) {
+                    if (image.findIns(nextCard, 0, i)) {
+                        pos[0] = i;
+                        break;
+                    }
+                }
+            }
+        } else {
+            pos[0] = 3;
+            for (int i = 0; i < 4; i++) {
+                if (nextPos[i]) {
+                    if (image.findIns(nextCard, i, 3)) {
+                        pos[1] = i;
+                        break;
+                    }
+                }
+            }
+        }
+        this.insert(pos[0], pos[1]);
+    }
+
+    public void insert(int x, int y) {
+        long tmp = nextCard;
         board = board | tmp << bitShift[x][y];
+    }
+
+    private void resetNP() {
+        for (boolean f:nextPos){
+            f = false;
+        }
     }
 
     private void findMaxCard() {
@@ -141,22 +199,21 @@ parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, rig
                     if (cell[j] != 0 && cell[j - 1] == 0) {
                         cell[j - 1] = cell[j];
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     } else if (cell[j - 1] + cell[j] == 3 && cell[j] != 0) {
                         cell[j - 1] = 3;
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     } else if ((cell[j - 1] == cell[j]) && (cell[j] > 2)) {
                         cell[j - 1]++;
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     }
                 }
             }
             if (fold != -1) {
+                ret = true;
+                nextPos[i] = true;
                 if (size - 1 - fold >= 0) System.arraycopy(cell, fold + 1, cell, fold, size - 1 - fold);
                 cell[size-1] = 0;
                 board = (board & ~maskRow[i]) |
@@ -164,6 +221,8 @@ parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, rig
                         (cell[1] << bitShift[i][1]) |
                         (cell[2] << bitShift[i][2]) |
                         (cell[3] << bitShift[i][3]);
+            } else if (cell[3] == 0) {
+                nextPos[i] = true;
             }
         }
         return ret;
@@ -182,22 +241,21 @@ parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, rig
                     if (cell[j] != 0 && cell[j + 1] == 0) {
                         cell[j + 1] = cell[j];
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     } else if (cell[j + 1] + cell[j] == 3 && cell[j] != 0) {
                         cell[j + 1] = 3;
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     } else if ((cell[j + 1] == cell[j]) && (cell[j] > 2)) {
                         cell[j + 1]++;
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     }
                 }
             }
             if (fold != -1) {
+                ret = true;
+                nextPos[i] = true;
                 System.arraycopy(cell, 0, cell, 1, fold);
                 cell[0] = 0;
                 board = (board & ~maskCol[i]) |
@@ -223,22 +281,21 @@ parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, rig
                     if (cell[j] != 0 && cell[j + 1] == 0) {
                         cell[j + 1] = cell[j];
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     } else if (cell[j + 1] + cell[j] == 3 && cell[j] != 0) {
                         cell[j + 1] = 3;
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     } else if ((cell[j + 1] == cell[j]) && (cell[j] > 2)) {
                         cell[j + 1]++;
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     }
                 }
             }
             if (fold != -1) {
+                ret = true;
+                nextPos[i] = true;
                 System.arraycopy(cell, 0, cell, 1, fold);
                 cell[0] = 0;
                 board = (board & ~maskRow[i]) |
@@ -264,22 +321,21 @@ parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, rig
                     if (cell[j] != 0 && cell[j - 1] == 0) {
                         cell[j - 1] = cell[j];
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     } else if (cell[j - 1] + cell[j] == 3 && cell[j] != 0) {
                         cell[j - 1] = 3;
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     } else if ((cell[j - 1] == cell[j]) && (cell[j] > 2)) {
                         cell[j - 1]++;
                         cell[j] = 0;
-                        ret = true;
                         fold = j;
                     }
                 }
             }
             if (fold != -1) {
+                ret = true;
+                nextPos[i] = true;
                 if (size - 1 - fold >= 0) System.arraycopy(cell, fold + 1, cell, fold, size - 1 - fold);
                 cell[size-1] = 0;
                 board = (board & ~maskCol[i]) |

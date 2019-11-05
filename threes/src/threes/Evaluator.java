@@ -39,28 +39,25 @@ public class Evaluator {
         }
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                if ((card[i][j] == 1 & card[i][j+1] == 2) || (card[i][j] == 2 & card[i][j+1] == 1)) {
+                if (card[i][j] == 1 || card[i][j] == 2) {
                     count1and2++;
-                } else if (card[i][j] == card[i][j+1] && card[i][j] > 2) {
+                } else if ((card[i][j] == card[i][j+1] && card[i][j] > 2) || (card[i][j] == 1 & card[i][j+1] == 2) || (card[i][j] == 2 & card[i][j+1] == 1)) {
                     countFold++;
                 }
-
-                if ((card[i][j] == 1 & card[i+1][j] == 2) || (card[i][j] == 2 & card[i+1][j] == 1)) {
-                    count1and2++;
-                } else if (card[i][j] == card[i+1][j] && card[i][j] > 2) {
+                if ((card[i][j] == card[i+1][j] && card[i][j] > 2) || (card[i][j] == 1 & card[i+1][j] == 2) || (card[i][j] == 2 & card[i+1][j] == 1)) {
                     countFold++;
                 }
             }
 
-            if ((card[3][i] == 1 & card[3][i+1] == 2) || (card[3][i] == 2 & card[3][i+1] == 1)) {
+            if (card[3][i] == 1 || card[3][i] == 2) {
                 count1and2++;
-            } else if (card[3][i] == card[3][i+1] && card[3][i] > 2) {
+            } else if ((card[3][i] == card[3][i+1] && card[3][i] > 2) || (card[3][i] == 1 & card[3][i+1] == 2) || (card[3][i] == 2 & card[3][i+1] == 1)) {
                 countFold++;
             }
 
-            if ((card[i][3] == 1 & card[i+1][3] == 2) || (card[i][3] == 2 & card[i+1][3] == 1)) {
+            if (card[i][3] == 1 || card[i][3] == 2) {
                 count1and2++;
-            } else if (card[i][3] == card[i+1][3] && card[i][3] > 2) {
+            } else if ((card[i][3] == card[i+1][3] && card[i][3] > 2) || (card[i][3] == 1 & card[i+1][3] == 2) || (card[i][3] == 2 & card[i+1][3] == 1)) {
                 countFold++;
             }
         }
@@ -71,7 +68,7 @@ public class Evaluator {
     public float calcScore(Board b){
         float score;
         count(b);
-        score = countEmpty * scoreEmptySpace + countFold * scoreFold + count1and2 * score1and2 + b.getMaxCard() * scoreMaxCard;
+        score = countEmpty * scoreEmptySpace + countFold * scoreFold - count1and2 * score1and2 + b.getMaxCard() * scoreMaxCard;
         return score;
     }
 
@@ -83,7 +80,7 @@ public class Evaluator {
             for (int i = 0; i <= size; i++) {
                 if (b.getCardIndex(i, size) == 0) {
                     Board p = new Board(b);
-                    p.insCard(b.getNextCard(), i, size);
+                    p.insert(i, size);
                     counter++;
                     avg = avg + calcScore(p);
                 }
@@ -94,7 +91,7 @@ public class Evaluator {
             for (int i = 0; i <= size; i++) {
                 if (b.getCardIndex(0, i) == 0) {
                     Board p = new Board(b);
-                    p.insCard(b.getNextCard(), 0, i);
+                    p.insert(0, i);
                     counter++;
                     avg = avg + calcScore(p);
                 }
@@ -105,7 +102,7 @@ public class Evaluator {
             for (int i = 0; i < size; i++) {
                 if (b.getCardIndex(i, 0) == 0) {
                     Board p = new Board(b);
-                    p.insCard(b.getNextCard(), i, 0);
+                    p.insert(i, 0);
                     counter++;
                     avg = avg + calcScore(p);
                 }
@@ -116,7 +113,7 @@ public class Evaluator {
             for (int i = 0; i < size; i++) {
                 if (b.getCardIndex(size, i) == 0) {
                     Board p = new Board(b);
-                    p.insCard(b.getNextCard(), size, i);
+                    p.insert(size, i);
                     counter++;
                     avg = avg + calcScore(p);
                 }
@@ -138,7 +135,7 @@ public class Evaluator {
                         if (!d.isEmpty(j)){
                             d.draw(j);
                             Board p = new Board(board);
-                            p.insCard(board.getNextCard(), i, size);
+                            p.insert(i, size);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             p.swipe(m);
@@ -158,7 +155,7 @@ public class Evaluator {
                         if (!d.isEmpty(j)){
                             d.draw(j);
                             Board p = new Board(board);
-                            p.insCard(board.getNextCard(), 0, i);
+                            p.insert(0, i);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             p.swipe(m);
@@ -177,7 +174,7 @@ public class Evaluator {
                         if (!d.isEmpty(j)){
                             d.draw(j);
                             Board p = new Board(board);
-                            p.insCard(board.getNextCard(), i, 0);
+                            p.insert(i, 0);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             p.swipe(m);
@@ -196,7 +193,7 @@ public class Evaluator {
                         if (!d.isEmpty(j)){
                             d.draw(j);
                             Board p = new Board(board);
-                            p.insCard(board.getNextCard(), size, i);
+                            p.insert(size, i);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             p.swipe(m);

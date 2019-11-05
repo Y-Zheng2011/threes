@@ -12,7 +12,7 @@ public class ADBShell {
             Runtime run = Runtime.getRuntime();
             Process process = run.exec("adb shell screencap -p /sdcard/threes_ai/screen.png");
             process.waitFor();
-            process = Runtime.getRuntime().exec("adb pull /sdcard/threes_ai/screen.png threes/image/screen.png");
+            process = Runtime.getRuntime().exec("adb pull /sdcard/threes_ai/screen.png image/screen.png");
             process.waitFor();
             process = Runtime.getRuntime().exec("adb shell rm /sdcard/threes_ai/screen.png");
             process.waitFor();

@@ -30,14 +30,14 @@ public class Main {
             System.out.printf("Move: %d (0: left, 1: down, 2: right, 3: up)\n",move);
             board.swipe(move);
             ADBShell.swipe(move);
-            TimeUnit.MILLISECONDS.sleep(700);
+//            TimeUnit.MILLISECONDS.sleep(700);
             ADBShell.screencap();
-            TimeUnit.MILLISECONDS.sleep(50);
+//            TimeUnit.MILLISECONDS.sleep(50);
             image.load();
             board.insNext(image, move);
             board.printBoard();
             long end = System.currentTimeMillis();
-            TimeUnit.MILLISECONDS.sleep(2000);
+//            TimeUnit.MILLISECONDS.sleep(2000);
             board.setNextCard(image.getNextTile());
             System.out.printf("Next card: %d\n",board.getNextCard());
             System.out.println("Running time: " + (end - start) + " ms");

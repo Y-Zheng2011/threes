@@ -63,7 +63,7 @@ public class ImProc {
     public void load(){
         try {
             String path = System.getProperty("user.dir");
-            path = path.concat("\\threes\\image\\screen.png");
+            path = path.concat("\\threes\\image\\screen.bmp");
             File input = new File(path);
             image = ImageIO.read(input);
 //            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -83,7 +83,7 @@ public class ImProc {
             }
         }
         nextTile[0] = getNextTile();
-        System.out.println("Finish reading image screen.png");
+        System.out.println("Finish reading image screen.bmp");
     }
 
     private int getTile(int x, int y) {

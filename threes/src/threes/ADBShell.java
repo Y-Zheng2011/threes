@@ -10,11 +10,11 @@ public class ADBShell {
     public static void screencap() {
         try {
             Runtime run = Runtime.getRuntime();
-            Process process = run.exec("adb shell screencap -p /sdcard/threes_ai/screen.png");
+            Process process = run.exec("adb shell screencap -p /sdcard/threes_ai/screen.bmp");
             process.waitFor();
-            process = Runtime.getRuntime().exec("adb pull /sdcard/threes_ai/screen.png threes/image/screen.png");
+            process = Runtime.getRuntime().exec("adb pull /sdcard/threes_ai/screen.bmp threes/image/screen.bmp");
             process.waitFor();
-            process = Runtime.getRuntime().exec("adb shell rm /sdcard/threes_ai/screen.png");
+            process = Runtime.getRuntime().exec("adb shell rm /sdcard/threes_ai/screen.bmp");
             process.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

@@ -102,7 +102,7 @@ public class Board {
     parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
     */
     public boolean swipe(int dir) {
-        boolean ret;
+        boolean ret = false;
         resetNP();
         if (dir == 0){
             ret = swipeLeft();
@@ -118,7 +118,6 @@ public class Board {
 
     public void insNext(ImProc image, int move) {
         int[] pos = {-1, -1};
-        image.load();
         if (move == 0) {
             pos[1] = 3;
             for (int i = 0; i < 4; i++) {
@@ -163,14 +162,26 @@ public class Board {
         this.insert(pos[0], pos[1]);
     }
 
+    public void printNP(){
+        for (boolean f : nextPos) {
+            System.out.printf("%b ", f);
+        }
+    }
+
     public void insert(int x, int y) {
         long tmp = nextCard;
+        if (this.getCardIndex(x, y) != 0) {
+            System.out.println("Insertion error!");
+            System.out.printf("Cell %d %d is not empty!", x, y);
+            printNP();
+            System.exit(1);
+        }
         board = board | tmp << bitShift[x][y];
     }
 
     private void resetNP() {
-        for (boolean f:nextPos){
-            f = false;
+        for (int i = 0; i< size; i++){
+            nextPos[i] = false;
         }
     }
 
@@ -263,6 +274,8 @@ public class Board {
                         (cell[1] << bitShift[1][i]) |
                         (cell[2] << bitShift[2][i]) |
                         (cell[3] << bitShift[3][i]);
+            } else if (cell[0] == 0) {
+                nextPos[i] = true;
             }
         }
         return ret;
@@ -303,6 +316,8 @@ public class Board {
                         (cell[1] << bitShift[i][1]) |
                         (cell[2] << bitShift[i][2]) |
                         (cell[3] << bitShift[i][3]);
+            } else if (cell[0] == 0) {
+                nextPos[i] = true;
             }
         }
         return ret;
@@ -343,6 +358,8 @@ public class Board {
                         (cell[1] << bitShift[1][i]) |
                         (cell[2] << bitShift[2][i]) |
                         (cell[3] << bitShift[3][i]);
+            } else if (cell[3] == 0) {
+                nextPos[i] = true;
             }
         }
         return ret;

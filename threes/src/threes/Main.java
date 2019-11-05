@@ -27,18 +27,22 @@ public class Main {
             long start = System.currentTimeMillis();
             move = Threes.findMove(board, 0, deck);
             if (move == -1) break;
+            System.out.printf("Move: %d (0: left, 1: down, 2: right, 3: up)\n",move);
             board.swipe(move);
             ADBShell.swipe(move);
-            TimeUnit.MILLISECONDS.sleep(100);
+            TimeUnit.MILLISECONDS.sleep(700);
             ADBShell.screencap();
+            TimeUnit.MILLISECONDS.sleep(50);
+            image.load();
             board.insNext(image, move);
-            System.out.printf("Move: %d (0: left, 1: down, 2: right, 3: up)\n",move);
             board.printBoard();
             long end = System.currentTimeMillis();
             TimeUnit.MILLISECONDS.sleep(2000);
             board.setNextCard(image.getNextTile());
             System.out.printf("Next card: %d\n",board.getNextCard());
             System.out.println("Running time: " + (end - start) + " ms");
+//            System.out.println("Continue?");
+//            String w = scan.next();
             System.out.println();
         }
     }

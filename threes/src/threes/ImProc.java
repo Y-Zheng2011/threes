@@ -63,7 +63,7 @@ public class ImProc {
     public void load(){
         try {
             String path = System.getProperty("user.dir");
-            path = path.concat("\\image\\screen.png");
+            path = path.concat("\\threes\\image\\screen.png");
             File input = new File(path);
             image = ImageIO.read(input);
 //            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);

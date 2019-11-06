@@ -4,7 +4,6 @@ import java.io.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import javax.imageio.ImageIO;
 
 import static java.lang.System.exit;
@@ -40,8 +39,8 @@ public class ImProc {
     Use the mid line to do matching.
      */
     private static int[] next = {498, 462};
-
     private static int thresh = 10;
+    private static int bonusWidth = 85;
     //endregion
 
 
@@ -147,36 +146,33 @@ public class ImProc {
 
     }*/
 
-
-    public void setProp(BufferedImage image, int maxIndex) {
-        StringBuilder str = new StringBuilder();
-
-        for (int i = 0; i < image.getWidth(); i++) {
-            if ((image.getRGB(i,0) & 0xff) < thresh) {
-                str.append('1');
-            } else {
-                str.append('0');
-            }
-        }
-
+    public void addBonus(long v, int num) {
         try {
             String path = System.getProperty("user.dir");
-            path = path.concat("\\image\\config.properties");
-            OutputStream output = new FileOutputStream(path);
-
-            Properties prop = new Properties();
-
-            prop.setProperty(str.toString(), "0");
-
-            // save properties to project root folder
-            prop.store(output, null);
-
-            System.out.println(prop);
-
+            path = path.concat("\\threes\\image\\bonusCard.txt");
+            File f = new File(path);
+            FileWriter fw = new FileWriter(f,true);
+            fw.write(v + " " + num + "\n");
+            fw.close();
         } catch (IOException io) {
             io.printStackTrace();
         }
+    }
 
+    private long isBonus(BufferedImage image) {
+        long ret = -1;
+        long m = 0;
+        for (int i = 0; i < 63; i++) {
+            if ((image.getRGB(i,0) & 0xff) < thresh) {
+                m = (m << 1) + 1;
+            } else {
+                m = m << 1;
+            }
+        }
+        if (m != 0) {
+            ret = m;
+        }
+        return ret;
     }
 
 //    private int match(BufferedImage image, int maxIndex) {

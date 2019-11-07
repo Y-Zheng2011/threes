@@ -1,11 +1,10 @@
 package threes;
 
+import java.util.Scanner;
+
 public class Threes {
 
-    /* Find move for the current board, search depth and deck.
-
-
-     */
+    // Find move for the current board, search depth and deck.
     public static int findMove(Board board, int depth, Deck deck) {
         int move = -1;
         float average, score = -1.0f;
@@ -54,6 +53,43 @@ public class Threes {
             } else {
                 return move;
             }
+        }
+    }
+
+
+    public static void run() {
+
+        ADBShell.screencap();
+        ImProc image = new ImProc();
+        image.init();
+
+        int move = -1;
+        Board board = new Board(image);
+        Deck deck = new Deck(image.getBoard());
+        board.printBoard();
+
+        while (true) {
+            long start = System.currentTimeMillis();
+            move = Threes.findMove(board, 0, deck);
+            if (move == -1) break;
+            System.out.printf("Move: %d (0: left, 1: down, 2: right, 3: up)\n",move);
+            board.swipe(move);
+            ADBShell.swipe(move);
+//            TimeUnit.MILLISECONDS.sleep(700);
+            ADBShell.screencap();
+//            TimeUnit.MILLISECONDS.sleep(50);
+            image.reloadImage();
+            board.insNext(image, move);
+            board.printBoard();
+            long end = System.currentTimeMillis();
+//            TimeUnit.MILLISECONDS.sleep(2000);
+            board.setNextCard(image.getNextCard());
+            board.setMultiNext(image.isMultiBonus());
+            System.out.printf("Next card: %d\n",board.getNextCard());
+            System.out.println("Running time: " + (end - start) + " ms");
+//            System.out.println("Continue?");
+//            String w = scan.next();
+            System.out.println();
         }
     }
 }

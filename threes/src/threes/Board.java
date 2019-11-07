@@ -30,6 +30,7 @@ public class Board {
     //endregion
 
     private int nextCard;
+    private boolean multiNext = false;
     private long board = 0; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.
     private int maxCard = 3;
     private int size;
@@ -37,8 +38,8 @@ public class Board {
 
 
     //region Constructors
-    // When the game start, input the board (as a 4 by 4 matrix) and the next card manually.
-    public Board(int[][] currentBoard, int nextCard){
+    public Board(ImProc image){
+        int[][] currentBoard = image.getBoard();
         size = currentBoard.length;
         for (int i = 0; i < size; i++){
             for (int j = 0; j < size; j++){
@@ -46,7 +47,7 @@ public class Board {
                 if (maxCard < currentBoard[i][i]) maxCard = RMAP.get(currentBoard[i][i]);
             }
         }
-        this.nextCard = nextCard;
+        this.nextCard = image.getNextCard();
     }
 
     public Board(Board b){
@@ -64,6 +65,10 @@ public class Board {
 
     public int getNextCard(){
         return nextCard;
+    }
+
+    public void setMultiNext(boolean isMultiNext) {
+        multiNext = isMultiNext;
     }
 
     //Return the max card, not index.
@@ -115,44 +120,39 @@ public class Board {
 
     public void insNext(ImProc image, int move) {
         int[] pos = {-1, -1};
+        if (multiNext) {
+
+        }
         if (move == 0) {
             pos[1] = 3;
             for (int i = 0; i < 4; i++) {
-                if (nextPos[i]) {
-                    if (image.findIns(nextCard,3, i)) {
+                if (nextPos[i] && image.findIns(3, i)) {
                         pos[0] = i;
                         break;
-                    }
                 }
             }
         } else if (move == 1) {
             pos[0] = 0;
             for (int i = 0; i < 4; i++) {
-                if (nextPos[i]) {
-                    if (image.findIns(nextCard, i, 0)) {
+                if (nextPos[i] && image.findIns(i, 0)) {
                         pos[1] = i;
                         break;
-                    }
                 }
             }
         } else if (move == 2) {
             pos[1] = 0;
             for (int i = 0; i < 4; i++) {
-                if (nextPos[i]) {
-                    if (image.findIns(nextCard, 0, i)) {
+                if (nextPos[i] && image.findIns(0, i)) {
                         pos[0] = i;
                         break;
-                    }
                 }
             }
         } else {
             pos[0] = 3;
             for (int i = 0; i < 4; i++) {
-                if (nextPos[i]) {
-                    if (image.findIns(nextCard, i, 3)) {
+                if (nextPos[i] && image.findIns(i, 3)) {
                         pos[1] = i;
                         break;
-                    }
                 }
             }
         }

@@ -49,8 +49,8 @@ public class ImProc {
     private int[][] board;
     private int maxIndex = 3;
     private boolean isBonus;
-    private boolean multiBonus;
-    private int nextTile = 0;
+    private boolean isMultiBonus;
+    private int nextCard = 0;
 
 
     public int[][] getBoard() {
@@ -63,7 +63,7 @@ public class ImProc {
 
     //Return true if there are 3 possible bonus cards.
     public boolean isMultiBonus() {
-        return multiBonus;
+        return isMultiBonus;
     }
 
     public void reloadImage() {
@@ -71,8 +71,6 @@ public class ImProc {
             path = System.getProperty("user.dir").concat("\\threes\\image\\");
             File input = new File(path.concat("screen.bmp"));
             image = ImageIO.read(input);
-//            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-//            image = ImageIO.read(input);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,32 +82,41 @@ public class ImProc {
         board = new int[4][4];
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                board[i][j] = getTile(j, i);
+                board[i][j] = getCard(j, i);
             }
         }
-        nextTile = getNextTile();
+        nextCard = getNextCard();
         System.out.println("Finish reading image screen.bmp");
     }
 
 
-    public int getNextTile() {
-        multiBonus = false;
+    public int getNextCard() {
+        isMultiBonus = false;
         isBonus = false;
         long m = bonusVal();
         if (isBonus(m)) {
             int pixFlag = image.getRGB(nextIden[0], nextIden[1]);
             if ((pixFlag & 0xff) != 250) {
-                multiBonus = true;
+                isMultiBonus = true;
             }
-            return map.get(m);
+            nextCard = map.get(m);
         } else {
             int pix = image.getRGB(next[0], next[1]);
-            return match(pix);
+            nextCard = match(pix);
         }
+        return nextCard;
     }
 
-    public boolean findIns(int card, int x, int y) {
-        return (card == getTile(x, y));
+    //Return if card(x,y) equals new card
+    public boolean findIns(int x, int y) {
+        if (isBonus) {
+            if (isMultiBonus) {
+                return (nextCard == )
+            } else {
+
+            }
+        }
+        return (nextCard == getCard(x, y));
     }
 
     public boolean isBonus(long m) {
@@ -156,6 +163,14 @@ public class ImProc {
         }
     }
 
+    private int getCard(int x, int y) {
+        int pix_x = x * dist_x + firstPix_x;
+        int pix_y = y * dist_y + firstPix_y;
+
+        int pix = image.getRGB(pix_x, pix_y);
+        return match(pix);
+    }
+
     //Identify the primitive type (0, 1, 2 or 3) of the card with pixel pix
     private int match(int pix) {
         int pix_r = pix >> 16 & 0xff;
@@ -176,12 +191,8 @@ public class ImProc {
         }
     }
 
-    private int getTile(int x, int y) {
-        int pix_x = x * dist_x + firstPix_x;
-        int pix_y = y * dist_y + firstPix_y;
+    private int matchBonus() {
 
-        int pix = image.getRGB(pix_x, pix_y);
-        return match(pix);
     }
 
     private void loadTxt() {

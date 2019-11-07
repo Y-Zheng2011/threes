@@ -33,7 +33,7 @@ public class Main {
 //            TimeUnit.MILLISECONDS.sleep(700);
             ADBShell.screencap();
 //            TimeUnit.MILLISECONDS.sleep(50);
-            image.load();
+            image.reloadImage();
             board.insNext(image, move);
             board.printBoard();
             long end = System.currentTimeMillis();

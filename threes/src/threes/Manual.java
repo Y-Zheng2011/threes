@@ -23,7 +23,7 @@ public class Manual {
         board.printBoard();
 
         ImProc image = new ImProc();
-        image.load();
+        image.reloadImage();
 
 
         move = Threes.findMove(board, 0, deck);

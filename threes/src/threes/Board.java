@@ -33,7 +33,7 @@ public class Board {
     private long board = 0; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.
     private int maxCard = 3;
     private int size;
-    private boolean[] nextPos = new boolean[4];
+    private boolean[] nextPos = new boolean[4]; //nextPos ia a boolean array that tell if the cell is possible to be inserted in the next card.
 
 
     //region Constructors
@@ -76,9 +76,6 @@ public class Board {
         return this.size;
     }
 
-    public boolean getNextPos(int i) {
-        return nextPos[i];
-    }
     //endregion
 
     public int getCardIndex(int x, int y) {
@@ -159,21 +156,15 @@ public class Board {
                 }
             }
         }
-        this.insert(pos[0], pos[1]);
+        insert(pos[0], pos[1]);
     }
 
-    public void printNP(){
-        for (boolean f : nextPos) {
-            System.out.printf("%b ", f);
-        }
-    }
 
     public void insert(int x, int y) {
         long tmp = nextCard;
         if (this.getCardIndex(x, y) != 0) {
             System.out.println("Insertion error!");
             System.out.printf("Cell %d %d is not empty!", x, y);
-            printNP();
             System.exit(1);
         }
         board = board | tmp << bitShift[x][y];

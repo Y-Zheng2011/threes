@@ -47,8 +47,20 @@ public class Board {
                 if (maxCard < currentBoard[i][i]) maxCard = RMAP.get(currentBoard[i][i]);
             }
         }
-        this.nextCard = image.getNextCard();
+        this.nextCard = image.imProcNextCard();
     }
+
+    public Board(int[][] currentBoard, int nc){
+        size = currentBoard.length;
+        for (int i = 0; i < size; i++){
+            for (int j = 0; j < size; j++){
+                board = (board << 4) + RMAP.get(currentBoard[i][j]);
+                if (maxCard < currentBoard[i][i]) maxCard = RMAP.get(currentBoard[i][i]);
+            }
+        }
+        this.nextCard = nc;
+    }
+
 
     public Board(Board b){
         board = b.board;
@@ -120,9 +132,6 @@ public class Board {
 
     public void insNext(ImProc image, int move) {
         int[] pos = {-1, -1};
-        if (multiNext) {
-
-        }
         if (move == 0) {
             pos[1] = 3;
             for (int i = 0; i < 4; i++) {
@@ -155,6 +164,9 @@ public class Board {
                         break;
                 }
             }
+        }
+        if (multiNext) {
+            nextCard = image.getNextCard();
         }
         insert(pos[0], pos[1]);
     }
@@ -355,5 +367,4 @@ public class Board {
         }
         return ret;
     }
-
 }

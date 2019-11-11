@@ -1,11 +1,6 @@
 package threes;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Properties;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 
 public class Manual {
 
@@ -23,7 +18,7 @@ public class Manual {
         board.printBoard();
 
         ImProc image = new ImProc();
-        image.reloadImage();
+        image.reloadImage("screen.bmp");
 
 
         move = Threes.findMove(board, 0, deck);
@@ -31,7 +26,7 @@ public class Manual {
         board.insNext(image, move);
         System.out.printf("Move: %d (0: left, 1: down, 2: right, 3: up)\n",move);
         board.printBoard();
-        board.setNextCard(image.getNextTile());
+        board.setNextCard(image.imProcNextCard());
         System.out.printf("Next card: %d\n",board.getNextCard());
 
 /*        while (true) {

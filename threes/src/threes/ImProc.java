@@ -17,15 +17,15 @@ public class ImProc {
      */
     private static int width = 1080;
     private static int height = 2280;
-    private static int firstPix_x = 235;
-    private static int firstPix_y = 780;
+    private static int firstPix_x = 200;
+    private static int firstPix_y = 876;
     private static int dist_x = 202;
     private static int dist_y = 270;
 
     // RGB color of different cards.
     private static int[] one = {102, 204, 255};
     private static int[] two = {255, 102, 128};
-    private static int[] three = {254, 255, 255};
+    private static int[] three = {252, 252, 252};
     private static int[] zero = {187, 217, 217};
 
     /*
@@ -40,12 +40,14 @@ public class ImProc {
     private static int[] next = {498, 462};
     private static int thresh = 128;
     private static int bonusWidth = 85;
+    private static int cardWidth = 169;
     //endregion
 
 
     private BufferedImage image = null;
     private String path;
-    private Map<Long, Integer> map = new HashMap<>();
+    private Map<Long, Integer> bonusMap = new HashMap<>();
+    private Map<Long, Integer> cardMap = new HashMap<>();
     private int[][] board;
     private int maxIndex = 3;
     private boolean isBonus;
@@ -66,31 +68,54 @@ public class ImProc {
         return isMultiBonus;
     }
 
-    public void reloadImage() {
+    public void reloadImage(String imgName) {
         try {
             path = System.getProperty("user.dir").concat("\\threes\\image\\");
-            File input = new File(path.concat("screen.bmp"));
+            File input = new File(path.concat(imgName));
             image = ImageIO.read(input);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void init() {
-        reloadImage();
-        loadTxt();
+    public void init(String args) {
+        reloadImage("screen.bmp");
+        loadTxt(args);
         board = new int[4][4];
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 board[i][j] = getCard(j, i);
             }
         }
-        nextCard = getNextCard();
+        nextCard = imProcNextCard();
         System.out.println("Finish reading image screen.bmp");
+        reloadImage("boardCard.bmp");
+        int index = 3;
+        try {
+            File f = new File(path.concat("boardCard.txt"));
+            FileWriter fw = new FileWriter(f, false);
+            for (int j = 0; j < 2; j++) {
+                for (int i = 0; i < 4; i++) {
+                    int x = i * dist_x + firstPix_x;
+                    int y = j * dist_y + firstPix_y;
+                    long val = cardVal(x, y);
+                    cardMap.put(val, index);
+                    fw.write(val + " " + index + "\n");
+                    index++;
+                }
+            }
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Finish processing image boardCard.txt");
     }
 
-
     public int getNextCard() {
+        return nextCard;
+    }
+
+    public int imProcNextCard() {
         isMultiBonus = false;
         isBonus = false;
         long m = bonusVal();
@@ -99,7 +124,7 @@ public class ImProc {
             if ((pixFlag & 0xff) != 250) {
                 isMultiBonus = true;
             }
-            nextCard = map.get(m);
+            nextCard = bonusMap.get(m);
         } else {
             int pix = image.getRGB(next[0], next[1]);
             nextCard = match(pix);
@@ -107,54 +132,91 @@ public class ImProc {
         return nextCard;
     }
 
-    //Return if card(x,y) equals new card
+    //Return true if card(x,y) equals new card
     public boolean findIns(int x, int y) {
         if (isBonus) {
             if (isMultiBonus) {
-                return (nextCard == )
+                int index = matchBonus(x, y);
+                if (index == -1) {
+                    return false;
+                } else if (nextCard == index) {
+                    return (nextCard == matchBonus(x, y));
+                } else if (nextCard - 1 == index) {
+                    nextCard--;
+                    return true;
+                } else if (nextCard + 1 == index) {
+                    nextCard++;
+                    return true;
+                }
             } else {
-
+                return (nextCard == matchBonus(x, y));
             }
         }
         return (nextCard == getCard(x, y));
     }
 
     public boolean isBonus(long m) {
-        if (m != -1) {
-            isBonus = true;
-            if (map.containsKey(m)) {
-                return true;
-            } else {
-                addBonus(m, maxIndex + 1);
-                return true;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    private long bonusVal() {
-        BufferedImage img = image.getSubimage(next[0], next[1], bonusWidth, 1);
-        long ret = 0;
-        long m = 0;
-        for (int i = 0; i < 63; i++) {
-            if ((img.getRGB(i, 0) & 0xff) < thresh) {
-                m = (m << 1) + 1;
-            } else {
-                m = m << 1;
-            }
-        }
         if (m != 0) {
             isBonus = true;
-            ret = m;
+            if (!bonusMap.containsKey(m)) {
+                maxIndex++;
+                addBonus(m, maxIndex);
+            }
+            return true;
         }
-        return ret;
+        return false;
+    }
+
+    private void loadTxt(String args) {
+        try {
+            File f = new File(path.concat("nextCard.txt"));
+            Scanner scan = new Scanner(f);
+            while (scan.hasNext()) {
+                maxIndex++;
+                long card = scan.nextLong();
+                int val = scan.nextInt();
+                bonusMap.put(card, val);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (args == "y") {
+                int index = 3;
+                File f = new File(path.concat("boardCard.txt"));
+                FileWriter fw = new FileWriter(f, false);
+                for (int j = 0; j < 2; j++) {
+                    for (int i = 0; i < 4; i++) {
+                        int x = i * dist_x + firstPix_x;
+                        int y = j * dist_y + firstPix_y;
+                        long val = cardVal(x, y);
+                        cardMap.put(val, index);
+                        fw.write(val + " " + index + "\n");
+                        index++;
+                    }
+                }
+                fw.close();
+            } else {
+                File f = new File(path.concat("boardCard.txt"));
+                Scanner scan = new Scanner(f);
+                while (scan.hasNext()) {
+                    long card = scan.nextLong();
+                    int val = scan.nextInt();
+                    cardMap.put(card, val);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Finish processing image boardCard.txt");
     }
 
     private void addBonus(long v, int i) {
         try {
-            map.put(v, i);
-            File f = new File(path.concat("bonusCard.txt"));
+            bonusMap.put(v, i);
+            File f = new File(path.concat("nextCard.txt"));
             FileWriter fw = new FileWriter(f, true);
             fw.write(v + " " + i + "\n");
             fw.close();
@@ -183,7 +245,7 @@ public class ImProc {
             return 1;
         } else if (pix_r == two[0] && pix_g == two[1] && pix_b == two[2]) {
             return 2;
-        } else if (pix_r == three[0] && pix_g == three[1] && pix_b == three[2]) {
+        } else if (pix_r > three[0] && pix_g > three[1] && pix_b > three[2]) {
             return 3;
         } else {
             System.out.println("Error! No matching tile!");
@@ -191,22 +253,42 @@ public class ImProc {
         }
     }
 
-    private int matchBonus() {
-
+    private int matchBonus(int x, int y) {
+        int pix_x = x * dist_x + firstPix_x;
+        int pix_y = y * dist_y + firstPix_y;
+        long val = cardVal(pix_x, pix_y);
+        if (bonusMap.containsKey(val)){
+            return bonusMap.get(val);
+        }
+        return -1;
     }
 
-    private void loadTxt() {
-        try {
-            File f = new File(path.concat("bonusCard.txt"));
-            Scanner scan = new Scanner(f);
-            while (scan.hasNext()) {
-                maxIndex++;
-                long card = scan.nextLong();
-                int val = scan.nextInt();
-                map.put(card, val);
+    private long cardVal(int x, int y) {
+        BufferedImage img = image.getSubimage(x, y, cardWidth, 1);
+        long m = 0;
+        for (int i = 0; i < 63; i++) {
+            if ((img.getRGB(i, 0) & 0xff) < thresh) {
+                m = (m << 1) + 1;
+            } else {
+                m = m << 1;
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         }
+        return m;
+    }
+
+    private long bonusVal() {
+        BufferedImage img = image.getSubimage(next[0], next[1], bonusWidth, 1);
+        long m = 0;
+        for (int i = 0; i < 63; i++) {
+            if ((img.getRGB(i, 0) & 0xff) < thresh) {
+                m = (m << 1) + 1;
+            } else {
+                m = m << 1;
+            }
+        }
+        if (m != 0) {
+            isBonus = true;
+        }
+        return m;
     }
 }

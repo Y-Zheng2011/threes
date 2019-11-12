@@ -138,8 +138,12 @@ public class Evaluator {
                             p.insert(i, size-1);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
-                            p.swipe(m);
-                            avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                            if (m != -1) {
+                                p.swipe(m);
+                                avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                            } else {
+                                avg = avg + scoreLostPenalty;
+                            }
                         }
                     }
                     counter++;
@@ -158,8 +162,12 @@ public class Evaluator {
                             p.insert(0, i);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
-                            p.swipe(m);
-                            avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                            if (m != -1) {
+                                p.swipe(m);
+                                avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                            } else {
+                                avg = avg + scoreLostPenalty;
+                            }
                         }
                     }
                 }
@@ -177,8 +185,12 @@ public class Evaluator {
                             p.insert(i, 0);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
-                            p.swipe(m);
-                            avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                            if (m != -1) {
+                                p.swipe(m);
+                                avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                            } else {
+                                avg = avg + scoreLostPenalty;
+                            }
                         }
                     }
                 }
@@ -196,8 +208,12 @@ public class Evaluator {
                             p.insert(size-1, i);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
-                            p.swipe(m);
-                            avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                            if (m != -1) {
+                                p.swipe(m);
+                                avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                            } else {
+                                avg = avg + scoreLostPenalty;
+                            }
                         }
                     }
                 }

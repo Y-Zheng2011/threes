@@ -116,7 +116,7 @@ public class Board {
     parameter dir indicates the direction of swiping (0, 1, 2 ,3 for left, down, right, up respectively).
     */
     public boolean swipe(int dir) {
-        boolean ret = false;
+        boolean ret;
         resetNP();
         if (dir == 0){
             ret = swipeLeft();

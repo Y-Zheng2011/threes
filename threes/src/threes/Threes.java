@@ -15,7 +15,7 @@ public class Threes {
             for (int i = 0; i < 4; i++) {
                 Board b = new Board(board);
                 shift = b.swipe(i);
-                gameOver = gameOver | shift;
+                gameOver = gameOver || shift;
                 if (shift) {
                     average = eval.calcAvgScore(b, i);
                     if (score < average) {
@@ -35,7 +35,7 @@ public class Threes {
             for (int i = 0; i < 4; i++) {
                 Board b = new Board(board);
                 shift = b.swipe(i);
-                gameOver = gameOver | shift;
+                gameOver = gameOver || shift;
                 if (shift) {
                     average = eval.calcAvgRec(b, deck, i, depth);
                     if (score < average) {

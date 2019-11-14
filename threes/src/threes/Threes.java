@@ -68,7 +68,7 @@ public class Threes {
 
         while (true) {
             long start = System.currentTimeMillis();
-            move = Threes.findMove(board, 0, deck);
+            move = Threes.findMove(board, 1, deck);
             if (move == -1) break;
             System.out.printf("Move: %d (0: left, 1: down, 2: right, 3: up)\n",move);
             board.swipe(move);
@@ -81,6 +81,14 @@ public class Threes {
             board.printBoard();
             long end = System.currentTimeMillis();
 //            TimeUnit.MILLISECONDS.sleep(2000);
+            if (!image.isBonus()) {
+                int n = board.getNextCard();
+                if (deck.isEmpty(n)) {
+                    deck.reset();
+                } else {
+                    deck.draw(n);
+                }
+            }
             board.setNextCard(image.imProcNextCard());
             board.setMultiNext(image.isMultiBonus());
             System.out.printf("Next card: %d\n",board.getNextCard());

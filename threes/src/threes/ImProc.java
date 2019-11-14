@@ -24,7 +24,7 @@ public class ImProc {
 
     // RGB color of different cards.
     private static int[] one = {102, 204, 255};
-    private static int[] two = {255, 102, 128};
+    private static int[] two = {252, 102, 128};
     private static int[] three = {252, 252, 252};
     private static int[] zero = {187, 217, 217};
 
@@ -80,34 +80,16 @@ public class ImProc {
 
     public void init(String args) {
         reloadImage("screen.bmp");
-        loadTxt(args);
         board = new int[4][4];
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 board[i][j] = getCard(j, i);
             }
         }
+        loadTxt(args);
         nextCard = imProcNextCard();
         System.out.println("Finish reading image screen.bmp");
-        reloadImage("boardCard.bmp");
-        int index = 3;
-        try {
-            File f = new File(path.concat("boardCard.txt"));
-            FileWriter fw = new FileWriter(f, false);
-            for (int j = 0; j < 2; j++) {
-                for (int i = 0; i < 4; i++) {
-                    int x = i * dist_x + firstPix_x;
-                    int y = j * dist_y + firstPix_y;
-                    long val = cardVal(x, y);
-                    cardMap.put(val, index);
-                    fw.write(val + " " + index + "\n");
-                    index++;
-                }
-            }
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        loadTxt(args);
         System.out.println("Finish processing image boardCard.txt");
     }
 
@@ -155,7 +137,7 @@ public class ImProc {
         return (nextCard == getCard(x, y));
     }
 
-    public boolean isBonus(long m) {
+    private boolean isBonus(long m) {
         if (m != 0) {
             isBonus = true;
             if (!bonusMap.containsKey(m)) {
@@ -183,6 +165,7 @@ public class ImProc {
 
         try {
             if (args == "y") {
+                reloadImage("boardCard.bmp");
                 int index = 3;
                 File f = new File(path.concat("boardCard.txt"));
                 FileWriter fw = new FileWriter(f, false);
@@ -209,8 +192,6 @@ public class ImProc {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        System.out.println("Finish processing image boardCard.txt");
     }
 
     private void addBonus(long v, int i) {
@@ -243,7 +224,7 @@ public class ImProc {
             return 0;
         } else if (pix_r == one[0] && pix_g == one[1] && pix_b == one[2]) {
             return 1;
-        } else if (pix_r == two[0] && pix_g == two[1] && pix_b == two[2]) {
+        } else if (pix_r > two[0] && pix_g == two[1] && pix_b == two[2]) {
             return 2;
         } else if (pix_r > three[0] && pix_g > three[1] && pix_b > three[2]) {
             return 3;

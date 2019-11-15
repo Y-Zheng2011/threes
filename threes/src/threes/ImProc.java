@@ -86,10 +86,9 @@ public class ImProc {
                 board[i][j] = getCard(j, i);
             }
         }
-        loadTxt(args);
         nextCard = imProcNextCard();
         System.out.println("Finish reading image screen.bmp");
-//        loadTxt(args);
+        loadTxt(args);
         System.out.println("Finish processing image boardCard.txt");
     }
 
@@ -164,7 +163,7 @@ public class ImProc {
         }
 
         try {
-            if (args == "y") {
+            if (args.equals("y")) {
                 reloadImage("boardCard.bmp");
                 int index = 3;
                 File f = new File(path.concat("boardCard.txt"));

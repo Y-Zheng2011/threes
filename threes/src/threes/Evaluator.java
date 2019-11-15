@@ -7,20 +7,12 @@ public class Evaluator {
     private int countFold = 0;
 
     // Heuristic scoring settings
-    private static float scoreLostPenalty = -20000.0f;
+    private static float scoreLostPenalty = -2000.0f;
     private static float scoreEmptySpace = 7.0f;
     private static float scoreMaxCard = 15.0f;
     private static float scoreFold = 4.0f;
-    private static float score1and2 = 3.0f;
+    private static float score1and2 = 7.0f;
 
-
-    public void setHS(float[] h) {
-        scoreLostPenalty = h[0];
-        scoreEmptySpace = h[1];
-        scoreMaxCard = h[2];
-        scoreFold = h[3];
-        score1and2 = h[4];
-    }
 
     private void reset(){
         countEmpty = 0;
@@ -170,6 +162,7 @@ public class Evaluator {
                             }
                         }
                     }
+                    counter++;
                 }
             }
             avg = avg / counter;
@@ -193,6 +186,7 @@ public class Evaluator {
                             }
                         }
                     }
+                    counter++;
                 }
             }
             avg = avg / counter;
@@ -216,6 +210,7 @@ public class Evaluator {
                             }
                         }
                     }
+                    counter++;
                 }
             }
             avg = avg / counter;

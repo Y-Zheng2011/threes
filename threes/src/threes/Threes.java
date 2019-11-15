@@ -1,11 +1,13 @@
 package threes;
 
+import java.util.Scanner;
+
 public class Threes {
 
     // Find move for the current board, search depth and deck.
     public static int findMove(Board board, int depth, Deck deck) {
         int move = -1;
-        float average, score = -1.0f;
+        float average, score = -1000.0f;
         boolean shift, gameOver = false;
         Evaluator eval = new Evaluator();
         if (deck.getDeckNum() == 0) {
@@ -24,13 +26,7 @@ public class Threes {
                     }
                 }
             }
-            if (!gameOver) {
-                System.out.println("Game is over!");
-                System.out.println();
-                return -1;
-            } else {
-                return move;
-            }
+            return move;
         } else {
             for (int i = 0; i < 4; i++) {
                 Board b = new Board(board);
@@ -44,13 +40,7 @@ public class Threes {
                     }
                 }
             }
-            if (!gameOver) {
-                System.out.println("Game is over!");
-                System.out.println();
-                return -1;
-            } else {
-                return move;
-            }
+            return move;
         }
     }
 
@@ -65,22 +55,24 @@ public class Threes {
         Board board = new Board(image);
         Deck deck = new Deck(image.getBoard());
         board.printBoard();
+//        Scanner scan = new Scanner(System.in);
 
         while (true) {
             long start = System.currentTimeMillis();
-            move = Threes.findMove(board, 1, deck);
-            if (move == -1) break;
+            move = Threes.findMove(board, 3, deck);
+            if (move == -1) {
+                System.out.println("No more moves!");
+                break;
+            }
             System.out.printf("Move: %d (0: left, 1: down, 2: right, 3: up)\n",move);
             board.swipe(move);
             ADBShell.swipe(move);
-//            TimeUnit.MILLISECONDS.sleep(700);
             ADBShell.screencap();
-//            TimeUnit.MILLISECONDS.sleep(50);
+
             image.reloadImage("screen.bmp");
             board.insNext(image, move);
             board.printBoard();
             long end = System.currentTimeMillis();
-//            TimeUnit.MILLISECONDS.sleep(2000);
             if (!image.isBonus()) {
                 int n = board.getNextCard();
                 if (deck.isEmpty(n)) {
@@ -93,9 +85,9 @@ public class Threes {
             board.setMultiNext(image.isMultiBonus());
             System.out.printf("Next card: %d\n",board.getNextCard());
             System.out.println("Running time: " + (end - start) + " ms");
-//            System.out.println("Continue?");
+            System.out.println("Continue?");
 //            String w = scan.next();
-            System.out.println();
+//            System.out.println();
         }
     }
 }

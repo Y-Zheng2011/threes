@@ -8,9 +8,9 @@ public class Manual {
         Scanner scan = new Scanner(System.in);
 
         int move = -1;
-        int[][] b = {{2, 0, 0, 0},
-                {6, 0, 0, 0},
-                {3, 0, 0, 1},
+        int[][] b = {{6, 0, 3, 0},
+                {12, 6, 3, 0},
+                {48, 12, 3, 1},
                 {2, 12, 1, 0}};
         int nc = 2;
         Board board = new Board(b, nc);

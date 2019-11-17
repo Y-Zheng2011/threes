@@ -30,7 +30,7 @@ public class Board {
     //endregion
 
     private int nextCard;
-    private boolean multiNext = false;
+    private int multiNext = 0;
     private long board = 0; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.
     private int maxCard = 3;
     private int size;
@@ -72,15 +72,19 @@ public class Board {
 
     //region Accessors
     public void setNextCard(int card){
-        nextCard = RMAP.get(card);
+        nextCard = card;
     }
 
     public int getNextCard(){
         return nextCard;
     }
 
-    public void setMultiNext(boolean isMultiNext) {
+    public void setMultiNext(int isMultiNext) {
         multiNext = isMultiNext;
+    }
+
+    public int getMultiNext() {
+        return multiNext;
     }
 
     //Return the max card, not index.
@@ -165,7 +169,7 @@ public class Board {
                 }
             }
         }
-        if (multiNext) {
+        if (multiNext > 1) {
             nextCard = image.getNextCard();
         }
         insert(pos[0], pos[1]);

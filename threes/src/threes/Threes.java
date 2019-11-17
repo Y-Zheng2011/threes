@@ -1,7 +1,5 @@
 package threes;
 
-import java.util.Scanner;
-
 public class Threes {
 
     // Find move for the current board, search depth and deck.
@@ -59,7 +57,7 @@ public class Threes {
 
         while (true) {
             long start = System.currentTimeMillis();
-            move = Threes.findMove(board, 3, deck);
+            move = Threes.findMove(board, 1, deck);
             if (move == -1) {
                 System.out.println("No more moves!");
                 break;
@@ -70,22 +68,25 @@ public class Threes {
             ADBShell.screencap();
 
             image.reloadImage("screen.bmp");
+            image.setMultiBonus(board.getMultiNext());
+            if (board.getMultiNext() > 0) {
+                image.setIsBonus(true);
+            }
             board.insNext(image, move);
             board.printBoard();
             long end = System.currentTimeMillis();
             if (!image.isBonus()) {
-                int n = board.getNextCard();
-                if (deck.isEmpty(n)) {
+                if (deck.isEmpty(board.getNextCard())) {
                     deck.reset();
                 } else {
-                    deck.draw(n);
+                    deck.draw(board.getNextCard());
                 }
             }
             board.setNextCard(image.imProcNextCard());
-            board.setMultiNext(image.isMultiBonus());
+            board.setMultiNext(image.multiBonus());
             System.out.printf("Next card: %d\n",board.getNextCard());
             System.out.println("Running time: " + (end - start) + " ms");
-            System.out.println("Continue?");
+//            System.out.println("Continue?");
 //            String w = scan.next();
 //            System.out.println();
         }

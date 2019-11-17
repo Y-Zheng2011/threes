@@ -29,15 +29,18 @@ public class ImProc {
     private static int[] zero = {187, 217, 217};
 
     /*
-    Pixel position used to identify whether the next bonus card is
+    Pixel positions used to identify whether the next bonus card is
     a single possibility or multiple possibilities.
      */
     private static int[] nextIden = {374, 462};
+    private static int[] nextMid = {540, 420};
+    private static int nextThresh = 222;
 
     /*The first pixel of the mid line of central next tile.
     Use the mid line to do matching.
      */
     private static int[] next = {498, 462};
+    private static int[] doubleNext = {438, 462};
     private static int thresh = 128;
     private static int bonusWidth = 85;
     private static int cardWidth = 169;
@@ -51,7 +54,7 @@ public class ImProc {
     private int[][] board;
     private int maxIndex = 3;
     private boolean isBonus;
-    private boolean isMultiBonus;
+    private int multiBonus = 0;
     private int nextCard = 0;
 
 
@@ -63,9 +66,17 @@ public class ImProc {
         return isBonus;
     }
 
-    //Return true if there are 3 possible bonus cards.
-    public boolean isMultiBonus() {
-        return isMultiBonus;
+    public void setIsBonus(boolean f) {
+        isBonus = f;
+    }
+
+    public void setMultiBonus(int mb) {
+        multiBonus = mb;
+    }
+
+    //Return the number of possible bonus cards (1, 2, or 3)
+    public int multiBonus() {
+        return multiBonus;
     }
 
     public void reloadImage(String imgName) {
@@ -97,14 +108,24 @@ public class ImProc {
     }
 
     public int imProcNextCard() {
-        isMultiBonus = false;
+        long m;
+        multiBonus = 0;
         isBonus = false;
-        long m = bonusVal();
+        int pixFlag1 = image.getRGB(nextMid[0], nextMid[1]);
+        int pixFlag2 = image.getRGB(nextIden[0], nextIden[1]);
+
+        if ((pixFlag1 & 0xff) == nextThresh || (pixFlag1 & 0xff) == (nextThresh+1)) {
+            multiBonus = 2;
+            m = bonusVal(doubleNext[0],doubleNext[1]);
+        } else if ((pixFlag2 & 0xff) != 250) {
+            multiBonus = 3;
+            m = bonusVal(next[0],next[1]);
+        } else {
+            m = bonusVal(next[0],next[1]);
+        }
+
         if (isBonus(m)) {
-            int pixFlag = image.getRGB(nextIden[0], nextIden[1]);
-            if ((pixFlag & 0xff) != 250) {
-                isMultiBonus = true;
-            }
+            multiBonus = 1;
             nextCard = bonusMap.get(m);
         } else {
             int pix = image.getRGB(next[0], next[1]);
@@ -116,7 +137,17 @@ public class ImProc {
     //Return true if card(x,y) equals new card
     public boolean findIns(int x, int y) {
         if (isBonus) {
-            if (isMultiBonus) {
+            if (multiBonus == 2) {
+                int index = matchBonus(x, y);
+                if (index == -1) {
+                    return false;
+                } else if (nextCard == index) {
+                    return (nextCard == matchBonus(x, y));
+                } else if (nextCard + 1 == index) {
+                    nextCard++;
+                    return true;
+                }
+            } else if (multiBonus == 3) {
                 int index = matchBonus(x, y);
                 if (index == -1) {
                     return false;
@@ -229,6 +260,7 @@ public class ImProc {
             return 3;
         } else {
             System.out.println("Error! No matching tile!");
+            System.out.println(pix_r + " " + pix_g + " " + pix_b);
             return -1;
         }
     }
@@ -256,8 +288,8 @@ public class ImProc {
         return m;
     }
 
-    private long bonusVal() {
-        BufferedImage img = image.getSubimage(next[0], next[1], bonusWidth, 1);
+    private long bonusVal(int x, int y) {
+        BufferedImage img = image.getSubimage(x, y, bonusWidth, 1);
         long m = 0;
         for (int i = 0; i < 63; i++) {
             if ((img.getRGB(i, 0) & 0xff) < thresh) {

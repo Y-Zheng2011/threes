@@ -33,6 +33,7 @@ public class Board {
     private int multiNext = 0;
     private long board = 0; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.
     private int maxCard = 3;
+    private int maxPos = 1; //If max card is on the edge, maxPos = 0, else maxPos = 1.
     private int size;
     private boolean[] nextPos = new boolean[4]; //nextPos ia a boolean array that tell if the cell is possible to be inserted in the next card.
 
@@ -67,6 +68,7 @@ public class Board {
         nextCard = b.nextCard;
         maxCard = b.nextCard;
         size = b.size;
+        multiNext = b.multiNext;
     }
     //endregion
 
@@ -87,14 +89,22 @@ public class Board {
         return multiNext;
     }
 
-    //Return the max card, not index.
+    //Return the max card index.
     public int getMaxCard(){
-        findMaxCard();
-        return MAP[maxCard];
+        //findMaxCard();
+        return maxCard;
+    }
+
+    public int getMaxPos() {
+        return maxPos;
     }
 
     public int getSize() {
         return this.size;
+    }
+
+    public boolean getNextPos(int i) {
+        return nextPos[i];
     }
 
     //endregion
@@ -192,7 +202,7 @@ public class Board {
         }
     }
 
-    private void findMaxCard() {
+/*    private void findMaxCard() {
         int tmp;
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
@@ -202,7 +212,7 @@ public class Board {
                 }
             }
         }
-    }
+    }*/
 
     private boolean swipeLeft() {
         boolean ret = false;
@@ -223,6 +233,14 @@ public class Board {
                         cell[j] = 0;
                         fold = j;
                     } else if ((cell[j - 1] == cell[j]) && (cell[j] > 2)) {
+                        if (cell[j - 1] == maxCard) {
+                            maxCard++;
+                            if ((j - 1) == 0 || (j - 1) == (size - 1) || (i == 0) || (i == (size - 1))) {
+                                maxPos = 0;
+                            } else {
+                                maxPos = 1;
+                            }
+                        }
                         cell[j - 1]++;
                         cell[j] = 0;
                         fold = j;
@@ -265,6 +283,14 @@ public class Board {
                         cell[j] = 0;
                         fold = j;
                     } else if ((cell[j + 1] == cell[j]) && (cell[j] > 2)) {
+                        if (cell[j + 1] == maxCard) {
+                            maxCard++;
+                            if ((j - 1) == 0 || (j - 1) == (size - 1) || (i == 0) || (i == (size - 1))) {
+                                maxPos = 0;
+                            } else {
+                                maxPos = 1;
+                            }
+                        }
                         cell[j + 1]++;
                         cell[j] = 0;
                         fold = j;
@@ -307,6 +333,14 @@ public class Board {
                         cell[j] = 0;
                         fold = j;
                     } else if ((cell[j + 1] == cell[j]) && (cell[j] > 2)) {
+                        if (cell[j + 1] == maxCard) {
+                            maxCard++;
+                            if ((j - 1) == 0 || (j - 1) == (size - 1) || (i == 0) || (i == (size - 1))) {
+                                maxPos = 0;
+                            } else {
+                                maxPos = 1;
+                            }
+                        }
                         cell[j + 1]++;
                         cell[j] = 0;
                         fold = j;
@@ -349,6 +383,14 @@ public class Board {
                         cell[j] = 0;
                         fold = j;
                     } else if ((cell[j - 1] == cell[j]) && (cell[j] > 2)) {
+                        if (cell[j - 1] == maxCard) {
+                            maxCard++;
+                            if ((j - 1) == 0 || (j - 1) == (size - 1) || (i == 0) || (i == (size - 1))) {
+                                maxPos = 0;
+                            } else {
+                                maxPos = 1;
+                            }
+                        }
                         cell[j - 1]++;
                         cell[j] = 0;
                         fold = j;

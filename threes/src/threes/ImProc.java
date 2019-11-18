@@ -17,8 +17,8 @@ public class ImProc {
      */
     private static int width = 1080;
     private static int height = 2280;
-    private static int firstPix_x = 200;
-    private static int firstPix_y = 876;
+    private static int firstPix_x = 237;
+    private static int firstPix_y = 814;
     private static int dist_x = 202;
     private static int dist_y = 270;
 
@@ -236,6 +236,18 @@ public class ImProc {
         }
     }
 
+    private void addCard(long v, int i) {
+        try {
+            cardMap.put(v, i);
+            File f = new File(path.concat("boardCard.txt"));
+            FileWriter fw = new FileWriter(f, true);
+            fw.write(v + " " + i + "\n");
+            fw.close();
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+    }
+
     private int getCard(int x, int y) {
         int pix_x = x * dist_x + firstPix_x;
         int pix_y = y * dist_y + firstPix_y;
@@ -260,7 +272,6 @@ public class ImProc {
             return 3;
         } else {
             System.out.println("Error! No matching tile!");
-            System.out.println(pix_r + " " + pix_g + " " + pix_b);
             return -1;
         }
     }
@@ -269,10 +280,14 @@ public class ImProc {
         int pix_x = x * dist_x + firstPix_x;
         int pix_y = y * dist_y + firstPix_y;
         long val = cardVal(pix_x, pix_y);
-        if (bonusMap.containsKey(val)){
-            return bonusMap.get(val);
+        System.out.println(val);
+        if (cardMap.containsKey(val)) {
+            return cardMap.get(val);
+        } else {
+            int t = cardMap.size() + 3;
+            addCard(val, t);
+            return t;
         }
-        return -1;
     }
 
     private long cardVal(int x, int y) {

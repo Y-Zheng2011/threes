@@ -63,12 +63,11 @@ public class Deck {
     }
 
     //Calculate the probability of drawing a normal card from the current deck.
-    public float calcNormProb(int max, int card) {
-        if (max < 48) {
+    public float calcNormProb(int card) {
             return prob[card-1];    // If max card is less than 48, no bonus card.
-        } else {
-            return prob[card-1] * 20/21;  //If max card is at least 48, there's a chance of 1/21 to draw a bonus card.
-        }
+//        } else {
+//            return prob[card-1] * 20/21;  //If max card is at least 48, there's a chance of 1/21 to draw a bonus card.
+//        }
     }
 
 }

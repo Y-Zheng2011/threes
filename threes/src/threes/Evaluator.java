@@ -7,11 +7,12 @@ public class Evaluator {
     private int countFold = 0;
 
     // Heuristic scoring settings
-    private static float scoreLostPenalty = -2000.0f;
+    private static float PenLost = -2000.0f;
     private static float scoreEmptySpace = 7.0f;
-    private static float scoreMaxCard = 15.0f;
+    private static float scoreMaxCard = 9.0f;
     private static float scoreFold = 4.0f;
-    private static float score1and2 = 7.0f;
+    private static float pen1and2 = -7.0f;
+    private static float penOffEdge = -5.0f;
 
 
     private void reset(){
@@ -60,7 +61,7 @@ public class Evaluator {
     public float calcScore(Board b){
         float score;
         count(b);
-        score = countEmpty * scoreEmptySpace + countFold * scoreFold - count1and2 * score1and2 + b.getMaxCard() * scoreMaxCard;
+        score = countEmpty * scoreEmptySpace + countFold * scoreFold + count1and2 * pen1and2 + b.getMaxCard() * scoreMaxCard + b.getMaxPos() * penOffEdge;
         return score;
     }
 
@@ -70,7 +71,7 @@ public class Evaluator {
         float avg = 0.0f;
         if (move == 0) {
             for (int i = 0; i < size; i++) {
-                if (b.getCardIndex(i, size-1) == 0) {
+                if (b.getNextPos(i)) {
                     Board p = new Board(b);
                     p.insert(i, size-1);
                     counter++;
@@ -81,7 +82,7 @@ public class Evaluator {
             return avg;
         } else if (move == 1) {
             for (int i = 0; i < size; i++) {
-                if (b.getCardIndex(0, i) == 0) {
+                if (b.getNextPos(i)) {
                     Board p = new Board(b);
                     p.insert(0, i);
                     counter++;
@@ -92,7 +93,7 @@ public class Evaluator {
             return avg;
         } else if (move == 2) {
             for (int i = 0; i < size; i++) {
-                if (b.getCardIndex(i, 0) == 0) {
+                if (b.getNextPos(i)) {
                     Board p = new Board(b);
                     p.insert(i, 0);
                     counter++;
@@ -103,7 +104,7 @@ public class Evaluator {
             return avg;
         } else if (move == 3) {
             for (int i = 0; i < size; i++) {
-                if (b.getCardIndex(size-1, i) == 0) {
+                if (b.getNextPos(i)) {
                     Board p = new Board(b);
                     p.insert(size-1, i);
                     counter++;
@@ -116,25 +117,25 @@ public class Evaluator {
     }
 
     //Calculate the average score for the board with recursion
-    public float calcAvgRec(Board board, Deck deck, int move, int depth) {
-        int counter = 0, size = board.getSize(), m;
+    public float calcAvgRec(Board b, Deck deck, int move, int depth) {
+        int counter = 0, size = b.getSize(), m;
         float avg = 0.0f;
         if (move == 0) {
             for (int i = 0; i < size; i++) {
-                if (board.getCardIndex(i, size-1) == 0) {
+                if (b.getNextPos(i)) {
                     for (int j = 1; j < 4; j++){
                         Deck d = new Deck(deck);
                         if (!d.isEmpty(j)){
                             d.draw(j);
-                            Board p = new Board(board);
+                            Board p = new Board(b);
                             p.insert(i, size-1);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             if (m != -1) {
                                 p.swipe(m);
-                                avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                                avg = avg + d.calcNormProb(j) * calcScore(p);
                             } else {
-                                avg = avg + scoreLostPenalty;
+                                avg = avg + PenLost;
                             }
                         }
                     }
@@ -145,20 +146,20 @@ public class Evaluator {
             return avg;
         } else if (move == 1) {
             for (int i = 0; i < size; i++) {
-                if (board.getCardIndex(0, i) == 0) {
+                if (b.getNextPos(i)) {
                     for (int j = 1; j < 4; j++){
                         Deck d = new Deck(deck);
                         if (!d.isEmpty(j)){
                             d.draw(j);
-                            Board p = new Board(board);
+                            Board p = new Board(b);
                             p.insert(0, i);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             if (m != -1) {
                                 p.swipe(m);
-                                avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                                avg = avg + d.calcNormProb(j) * calcScore(p);
                             } else {
-                                avg = avg + scoreLostPenalty;
+                                avg = avg + PenLost;
                             }
                         }
                     }
@@ -169,20 +170,20 @@ public class Evaluator {
             return avg;
         } else if (move == 2) {
             for (int i = 0; i < size; i++) {
-                if (board.getCardIndex(i, 0) == 0) {
+                if (b.getNextPos(i)) {
                     for (int j = 1; j < 4; j++){
                         Deck d = new Deck(deck);
                         if (!d.isEmpty(j)){
                             d.draw(j);
-                            Board p = new Board(board);
+                            Board p = new Board(b);
                             p.insert(i, 0);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             if (m != -1) {
                                 p.swipe(m);
-                                avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                                avg = avg + d.calcNormProb(j) * calcScore(p);
                             } else {
-                                avg = avg + scoreLostPenalty;
+                                avg = avg + PenLost;
                             }
                         }
                     }
@@ -193,20 +194,20 @@ public class Evaluator {
             return avg;
         } else if (move == 3) {
             for (int i = 0; i < size; i++) {
-                if (board.getCardIndex(size-1, i) == 0) {
+                if (b.getNextPos(i)) {
                     for (int j = 1; j < 4; j++){
                         Deck d = new Deck(deck);
                         if (!d.isEmpty(j)){
                             d.draw(j);
-                            Board p = new Board(board);
+                            Board p = new Board(b);
                             p.insert(size-1, i);
                             p.setNextCard(j);
                             m = Threes.findMove(p, depth - 1, d);
                             if (m != -1) {
                                 p.swipe(m);
-                                avg = avg + d.calcNormProb(p.getMaxCard(), j) * calcScore(p);
+                                avg = avg + d.calcNormProb(j) * calcScore(p);
                             } else {
-                                avg = avg + scoreLostPenalty;
+                                avg = avg + PenLost;
                             }
                         }
                     }

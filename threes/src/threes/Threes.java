@@ -45,19 +45,18 @@ public class Threes {
 
     public static void run(String args) {
 
-        ADBShell.screencap();
+        ADBShell.screenCap();
         ImProc image = new ImProc();
         image.init(args);
 
-        int move = -1;
+        int move;
         Board board = new Board(image);
         Deck deck = new Deck(image.getBoard());
         board.printBoard();
-//        Scanner scan = new Scanner(System.in);
 
         while (true) {
             long start = System.currentTimeMillis();
-            move = Threes.findMove(board, 1, deck);
+            move = Threes.findMove(board, 3, deck);
             if (move == -1) {
                 System.out.println("No more moves!");
                 break;
@@ -65,7 +64,7 @@ public class Threes {
             System.out.printf("Move: %d (0: left, 1: down, 2: right, 3: up)\n",move);
             board.swipe(move);
             ADBShell.swipe(move);
-            ADBShell.screencap();
+            ADBShell.screenCap();
 
             image.reloadImage("screen.bmp");
             image.setMultiBonus(board.getMultiNext());
@@ -86,9 +85,6 @@ public class Threes {
             board.setMultiNext(image.multiBonus());
             System.out.printf("Next card: %d\n",board.getNextCard());
             System.out.println("Running time: " + (end - start) + " ms");
-//            System.out.println("Continue?");
-//            String w = scan.next();
-//            System.out.println();
         }
     }
 }

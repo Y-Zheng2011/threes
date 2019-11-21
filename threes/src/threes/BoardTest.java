@@ -28,6 +28,11 @@ public class BoardTest {
     private static final long[] maskRow = {0xffff000000000000L, 0x0000ffff00000000L, 0x00000000ffff0000L, 0x000000000000ffffL};
     //endregion
 
+    private class Threes {
+        private short[] result = new short[65536];
+    }
+
+
     private int nextCard;
     private int multiNext = 0;
     private long board = 0; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.

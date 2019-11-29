@@ -217,7 +217,7 @@ public class Board {
     private boolean swipeLeft() {
         boolean ret = false;
         int fold;
-        long[] cell = new long[size];
+        int[] cell = new int[size];
         for (int i = 0; i < size; i++) {
             fold = -1;
             cell[0] = (int) ((board & mask[i][0]) >> bitShift[i][0]);
@@ -267,7 +267,7 @@ public class Board {
     private boolean swipeDown() {
         boolean ret = false;
         int fold;
-        long[] cell = new long[size];
+        int[] cell = new int[size];
         for (int i = 0; i < size; i++) {
             fold = -1;
             cell[size-1] = (int) ((board & mask[size-1][i]) >> bitShift[size-1][i]);
@@ -317,7 +317,7 @@ public class Board {
     private boolean swipeRight() {
         boolean ret = false;
         int fold;
-        long[] cell = new long[size];
+        int[] cell = new int[size];
         for (int i = 0; i < size; i++) {
             fold = -1;
             cell[size-1] = (int) ((board & mask[i][size-1]) >> bitShift[i][size-1]);
@@ -367,7 +367,7 @@ public class Board {
     private boolean swipeUp() {
         boolean ret = false;
         int fold;
-        long[] cell = new long[size];
+        int[] cell = new int[size];
         for (int i = 0; i < size; i++) {
             fold = -1;
             cell[0] = (int) ((board & mask[0][i]) >> bitShift[0][i]);

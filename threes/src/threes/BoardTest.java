@@ -23,20 +23,21 @@ public class BoardTest {
             {0x000000000000f000L, 0x0000000000000f00L, 0x00000000000000f0L, 0x000000000000000fL}};
 
     //bitShift for each cell and initialization.
-    private static final long[][] cellShift = {{60, 56, 52, 48}, {44, 40, 36, 32}, {28, 24, 20, 16}, {12, 8, 4, 0}};
+    private static final long[][] shiftCell = {{60, 56, 52, 48}, {44, 40, 36, 32}, {28, 24, 20, 16}, {12, 8, 4, 0}};
 
     private static final long[] maskCol = {0xf000f000f000f000L, 0x0f000f000f000f00L, 0x00f000f000f000f0L, 0x000f000f000f000fL};
     private static final long[] maskRow = {0xffff000000000000L, 0x0000ffff00000000L, 0x00000000ffff0000L, 0x000000000000ffffL};
-    private static final int[] rowShift = {12, 8, 4, 0};
+    private static final int[] shiftRow = {48, 32, 16, 0};
     //endregion
 
 
-    private static int[] resultLeft = new int[65536];
-    private static int[] resultRight = new int[65536];
+    private static short[] resultLeft = new short[65536];
+    private static short[] resultRight = new short[65536];
 
 
 
     private int nextCard;
+    private int size = 4;
     private int multiNext = 0;
     private long board = 0; //Per the idea in https://github.com/nneonneo/threes-ai, use a 64bit integer to store the entire board.
     private int maxCard = 3;
@@ -54,8 +55,8 @@ public class BoardTest {
             }
         }
         this.nextCard = image.imProcNextCard();
-        Arrays.fill(resultLeft, -1);
-        Arrays.fill(resultRight, -1);
+        Arrays.fill(resultLeft, (short) -1);
+        Arrays.fill(resultRight, (short) -1);
     }
 
     public BoardTest(int[][] currentBoard, int nc){
@@ -65,6 +66,9 @@ public class BoardTest {
             }
         }
         this.nextCard = nc;
+        this.size = 4;
+        Arrays.fill(resultLeft, (short) -1);
+        Arrays.fill(resultRight, (short) -1);
     }
 
 
@@ -73,25 +77,70 @@ public class BoardTest {
         nextCard = b.nextCard;
         maxCard = b.nextCard;
         multiNext = b.multiNext;
+        size = 4;
     }
     //endregion
 
 
+    //region Accessors
+    public void setNextCard(int card){
+        nextCard = card;
+    }
 
+    public int getNextCard(){
+        return nextCard;
+    }
+
+    public void setMultiNext(int isMultiNext) {
+        multiNext = isMultiNext;
+    }
+
+    public int getMultiNext() {
+        return multiNext;
+    }
+
+    //Return the max card index.
+    public int getMaxCard(){
+        //findMaxCard();
+        return maxCard;
+    }
+
+    public int getMaxPos() {
+        return maxPos;
+    }
+
+    public int getSize() {
+        return this.size;
+    }
+
+    public boolean getNextPos(int i) {
+        return nextPos[i];
+    }
+
+    //endregion
+
+
+    public int getCardIndex(int x, int y) {
+        return (int) ((board & maskCell[x][y]) >> shiftCell[x][y]);
+    }
 
     public void printBoard() {
         int tmp;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 3; j++) {
-                tmp = (int) ((board & maskCell[i][j]) >> cellShift[i][j]);
+                tmp = (int) ((board & maskCell[i][j]) >> shiftCell[i][j]);
                 System.out.print(tmp + ", ");
             }
-            tmp = (int) ((board & maskCell[i][3]) >> cellShift[i][3]);
+            tmp = (int) ((board & maskCell[i][3]) >> shiftCell[i][3]);
             System.out.println(tmp);
         }
         System.out.println();
     }
 
+    public void insert(int x, int y) {
+        long tmp = nextCard;
+        board = board | tmp << shiftCell[x][y];
+    }
 
     public boolean swipe(int dir) {
         boolean ret;
@@ -116,11 +165,11 @@ public class BoardTest {
 
     private boolean foldLeft(int i) {
         boolean ret = false;
-        short row = (short) ((board & maskRow[i]) >> rowShift[i]);
-        int r = resultLeft[row];
+        short row = (short) ((board & maskRow[i]) >> shiftRow[i]);
+        short r = resultLeft[row];
         if (r != -1) {
             if (r != row) {
-                board = (board & ~maskRow[i]) | (r << rowShift[i]);
+                board = (board & ~maskRow[i]) | ((long) r << shiftRow[i]);
                 nextPos[i] = true;
                 return true;
             } else {
@@ -129,9 +178,9 @@ public class BoardTest {
         } else {
             int fold = -1;
             short[] cell = new short[4];
-            cell[0] = (short) ((board & maskCell[i][0]) >> cellShift[i][0]);
+            cell[0] = (short) ((board & maskCell[i][0]) >> shiftCell[i][0]);
             for (int j = 1; j < 4; j++) {
-                cell[j] = (short) ((board & maskCell[i][j]) >> cellShift[i][j]);
+                cell[j] = (short) ((board & maskCell[i][j]) >> shiftCell[i][j]);
                 if (fold == -1) {
                     if (cell[j] != 0 && cell[j - 1] == 0) {
                         cell[j - 1] = cell[j];
@@ -147,17 +196,23 @@ public class BoardTest {
                         fold = j;
                     }
                 }
-                if (fold != -1) {
-                    ret = true;
-                    nextPos[i] = true;
-                    System.arraycopy(cell, fold + 1, cell, fold, 3 - fold);
-                    cell[3] = 0;
-                    r = (short) (cell[0] << 12 | cell[1] << 8 | cell[2] << 4 | cell[3]) ;
-                    resultLeft[row] = r;
-                    board = (board & ~maskRow[i]) | (r << rowShift[i]);
-                } else if (cell[3] == 0) {
-                    nextPos[i] = true;
-                    resultLeft[row] = row;
+            }
+            if (fold != -1) {
+                ret = true;
+                nextPos[i] = true;
+                System.arraycopy(cell, fold + 1, cell, fold, 3 - fold);
+                cell[3] = 0;
+                r = (short) (cell[0] << 12 | cell[1] << 8 | cell[2] << 4 | cell[3]) ;
+                resultLeft[row] = r;
+                if (resultRight[mirror(row)] == -1) {
+                    resultRight[mirror(row)] = mirror(r);
+                }
+                board = (board & ~maskRow[i]) | ((long) r << shiftRow[i]);
+            } else if (cell[3] == 0) {
+                nextPos[i] = true;
+                resultLeft[row] = row;
+                if (resultRight[mirror(row)] == -1) {
+                    resultRight[mirror(row)] = mirror(r);
                 }
             }
         }
@@ -166,11 +221,11 @@ public class BoardTest {
 
     private boolean foldRight(int i) {
         boolean ret = false;
-        short row = (short) ((board & maskRow[i]) >> rowShift[i]);
-        int r = resultRight[row];
+        short row = (short) ((board & maskRow[i]) >> shiftRow[i]);
+        short r = resultRight[row];
         if (r != -1) {
             if (r != row) {
-                board = (board & ~maskRow[i]) | (r << rowShift[i]);
+                board = (board & ~maskRow[i]) | ((long) r << shiftRow[i]);
                 nextPos[i] = true;
                 return true;
             } else {
@@ -179,35 +234,42 @@ public class BoardTest {
         } else {
             int fold = -1;
             short[] cell = new short[4];
-            cell[0] = (short) ((board & maskCell[i][0]) >> cellShift[i][0]);
-            for (int j = 1; j < 4; j++) {
-                cell[j] = (short) ((board & maskCell[i][j]) >> cellShift[i][j]);
+            cell[0] = (short) ((board & maskCell[i][0]) >> shiftCell[i][0]);
+            cell[3] = (short) ((board & maskCell[i][3]) >> shiftCell[i][3]);
+            for (int j = 2; j >= 0; j--) {
+                cell[j] = (short) ((board & maskCell[i][j]) >> shiftCell[i][j]);
                 if (fold == -1) {
-                    if (cell[j] != 0 && cell[j - 1] == 0) {
-                        cell[j - 1] = cell[j];
+                    if (cell[j] != 0 && cell[j + 1] == 0) {
+                        cell[j + 1] = cell[j];
                         cell[j] = 0;
                         fold = j;
-                    } else if (cell[j - 1] + cell[j] == 3 && cell[j] != 0) {
-                        cell[j - 1] = 3;
+                    } else if (cell[j + 1] + cell[j] == 3 && cell[j] != 0) {
+                        cell[j + 1] = 3;
                         cell[j] = 0;
                         fold = j;
-                    } else if ((cell[j - 1] == cell[j]) && (cell[j] > 2)) {
-                        cell[j - 1]++;
+                    } else if ((cell[j + 1] == cell[j]) && (cell[j] > 2)) {
+                        cell[j + 1]++;
                         cell[j] = 0;
                         fold = j;
                     }
                 }
-                if (fold != -1) {
-                    ret = true;
-                    nextPos[i] = true;
-                    System.arraycopy(cell, fold + 1, cell, fold, 3 - fold);
-                    cell[3] = 0;
-                    r = (short) (cell[0] << 12 | cell[1] << 8 | cell[2] << 4 | cell[3]) ;
-                    resultRight[row] = r;
-                    board = (board & ~maskRow[i]) | (r << rowShift[i]);
-                } else if (cell[3] == 0) {
-                    nextPos[i] = true;
-                    resultRight[row] = row;
+            }
+            if (fold != -1) {
+                ret = true;
+                nextPos[i] = true;
+                System.arraycopy(cell, 0, cell, 1, fold);
+                cell[0] = 0;
+                r = (short) (cell[0] << 12 | cell[1] << 8 | cell[2] << 4 | cell[3]) ;
+                resultRight[row] = r;
+                if (resultLeft[mirror(row)] == -1) {
+                    resultLeft[mirror(row)] = mirror(r);
+                }
+                board = (board & ~maskRow[i]) | ((long) r << shiftRow[i]);
+            } else if (cell[0] == 0) {
+                nextPos[i] = true;
+                resultRight[row] = row;
+                if (resultLeft[mirror(row)] == -1) {
+                    resultLeft[mirror(row)] = mirror(r);
                 }
             }
         }
@@ -218,21 +280,22 @@ public class BoardTest {
         return foldLeft(0) | foldLeft(1) | foldLeft(2) | foldLeft(3);
     }
 
-    private boolean swipeRight() {
-        return foldRight(0) | foldLeft(1) | foldLeft(2) | foldLeft(3);
-    }
-
-
-
     private boolean swipeDown() {
         transpose();
-        boolean ret = foldLeft(0) | foldLeft(1) | foldLeft(2) | foldLeft(3);
+        boolean ret = foldRight(0) | foldRight(1) | foldRight(2) | foldRight(3);
         transpose();
         return ret;
     }
 
-    private boolean swipeUp() {
+    private boolean swipeRight() {
+        return foldRight(0) | foldRight(1) | foldRight(2) | foldRight(3);
+    }
 
+    private boolean swipeUp() {
+        transpose();
+        boolean ret = foldLeft(0) | foldLeft(1) | foldLeft(2) | foldLeft(3);
+        transpose();
+        return ret;
     }
 
     private void transpose() {
@@ -247,29 +310,25 @@ public class BoardTest {
         board = board | (r1 << 12) | (r2 << 24) | (r3 << 36);
     }
 
-/*
-    private void mirror() {
-        long r3,r1,l1,l3;
-        r3 = board & 0xF000F000F000F000L;
-        r1 = board & 0x0F000F000F000F00L;
-        l1 = board & 0x00F000F000F000F0L;
-        l3 = board & 0x000F000F000F000FL;
-        board = r3 >> 12 | r1 >> 4 | l3 << 12 | l1 << 4;
+    private short mirror(short val) {
+        int r3,r1,l1,l3;
+        r3 = val & 0xF000;
+        r1 = val & 0x0F00;
+        l1 = val & 0x00F0;
+        l3 = val & 0x000F;
+        return ((short) (r3 >> 12 | r1 >> 4 | l3 << 12 | l1 << 4));
     }
-*/
 
     public static void main(String[] args) {
         int[][] b = {{0, 1, 2, 3},
-                {4, 5, 6, 7},
-                {0, 1, 2, 3},
-                {4, 5, 6, 7}};
+                {0, 0, 0, 3},
+                {3, 1, 2, 0},
+                {1, 2, 2, 1}};
         int nc = 2;
         BoardTest board = new BoardTest(b, nc);
         board.printBoard();
-        board.transpose();
+        board.insert(0,0);
         board.printBoard();
-        board.transpose();
-        board.mirror();
-        board.printBoard();
+
     }
 }
